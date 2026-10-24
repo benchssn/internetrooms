@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glyph Drift</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #05060a; overflow: hidden; cursor: crosshair; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  #hud {
+    position: fixed; left: 16px; bottom: 16px; font: 12px/1.6 ui-monospace, Menlo, monospace;
+    color: #8aa4c8; background: rgba(5,6,10,.7); padding: 10px 14px; border: 1px solid #1d2a40;
+    border-radius: 6px; transition: opacity .4s; user-select: none;
+  }
+  #hud b { color: #cfe0ff; font-weight: 600; }
+  #hud.hidden { opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud">
+  <b>click</b> heart / wave &nbsp; <b>1</b> heart &nbsp; <b>2</b> wave<br>
+  <b>M</b> mic reactive <span id="mic">off</span> &nbsp; <b>A</b> auto drops <span id="auto">off</span><br>
+  <b>↑/↓</b> flow speed &nbsp; <b>F</b> fullscreen &nbsp; <b>H</b> hide this
+</div>
+<script>
+// ---------- Improved Perlin noise (3D) ----------
+const perm = new Uint8Array(512);
+(() => {
+  const p = [...Array(256).keys()];
+  for (let i = 255; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [p[i], p[j]] = [p[j], p[i]]; }
+  for (let i = 0; i < 512; i++) perm[i] = p[i & 255];
+})();
+const fade = t => t * t * t * (t * (t * 6 - 15) + 10);
+const lerp = (a, b, t) => a + (b - a) * t;
+function grad(h, x, y, z) {
+  h &= 15;
+  const u = h < 8 ? x : y, v = h < 4 ? y : (h === 12 || h === 14 ? x : z);
+  return ((h & 1) ? -u : u) + ((h & 2) ? -v : v);
+}
+function noise(x, y, z) {
+  const X = Math.floor(x) & 255, Y = Math.floor(y) & 255, Z = Math.floor(z) & 255;
+  x -= Math.floor(x); y -= Math.floor(y); z -= Math.floor(z);
+  const u = fade(x), v = fade(y), w = fade(z);
+  const A = perm[X] + Y, AA = perm[A] + Z, AB = perm[A + 1] + Z;
+  const B = perm[X + 1] + Y, BA = perm[B] + Z, BB = perm[B + 1] + Z;
+  return lerp(
+    lerp(lerp(grad(perm[AA], x, y, z), grad(perm[BA], x - 1, y, z), u),
+         lerp(grad(perm[AB], x, y - 1, z), grad(perm[BB], x - 1, y - 1, z), u), v),
+    lerp(lerp(grad(perm[AA + 1], x, y, z - 1), grad(perm[BA + 1], x - 1, y, z - 1), u),
+         lerp(grad(perm[AB + 1], x, y - 1, z - 1), grad(perm[BB + 1], x - 1, y - 1, z - 1), u), v),
+    w);
+}
+
+// ---------- Setup ----------
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d', { alpha: false });
+const CELL_W = 11, CELL_H = 17, FONT_PX = 14;
+const RAMP = ' ..·:-~=+*';                        // low-energy glyphs
+const BRIGHT = '0123456789ABCDEFXZ#%$&@<>/\\';    // high-energy, mutating glyphs
+const LEVELS = 14, TINTS = 10;                    // color buckets for batched drawing
+let cols, rows, dpr, glyphs, palette;
+
+function buildPalette() {
+  // palette[tint][level] — grey base blended toward electric blue
+  palette = [];
+  for (let t = 0; t < TINTS; t++) {
+    const row = [];
+    const k = t / (TINTS - 1);
+    for (let l = 0; l < LEVELS; l++) {
+      const b = Math.pow(l / (LEVELS - 1), 1.3);
+      const g = 18 + b * 150;
+      const r = lerp(g, 40 + 80 * b, k), gg = lerp(g, 120 + 110 * b, k), bb = lerp(g * 1.08, 255, k * (0.55 + 0.45 * b));
+      row.push(`rgb(${r | 0},${gg | 0},${Math.min(255, bb) | 0})`);
+    }
+    palette.push(row);
+  }
+}
+
+function resize() {
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  cols = Math.ceil(innerWidth / CELL_W); rows = Math.ceil(innerHeight / CELL_H);
+  glyphs = new Array(cols * rows);
+  for (let i = 0; i < glyphs.length; i++) glyphs[i] = BRIGHT[(Math.random() * BRIGHT.length) | 0];
+}
+addEventListener('resize', resize);
+buildPalette(); resize();
+
+// ---------- Effects (hearts + waves) ----------
+const effects = [];
+function spawn(kind, x, y) {
+  effects.push({ kind, x, y, born: performance.now(), life: kind === 'heart' ? 3600 : 3000,
+                 size: kind === 'heart' ? 80 + Math.random() * 70 : 0, seed: Math.random() * 100 });
+  if (effects.length > 24) effects.shift();
+}
+canvas.addEventListener('pointerdown', e => spawn(Math.random() < 0.5 ? 'heart' : 'wave', e.clientX, e.clientY));
+
+let carve = 0;
+// heart implicit: (x²+y²-1)³ - x²y³ = 0  → returns glow intensity for a cell
+function heartGlow(e, px, py, age) {
+  const p = age / e.life;
+  const beat = 1 + 0.08 * Math.sin(age * 0.012) * (1 - p);       // gentle pulse
+  const s = e.size * (0.55 + 0.6 * (1 - Math.pow(1 - Math.min(p * 3, 1), 3))) * beat;
+  const x = (px - e.x) / s, y = -(py - e.y) / s + 0.15;
+  if (x * x + y * y > 4) return 0;
+  const a = x * x + y * y - 1;
+  const f = a * a * a - x * x * y * y * y;
+  const edge = Math.exp(-Math.abs(f) * 9);                    // bright outline
+  const k = 1 - p * p;
+  if (f < 0) carve = Math.max(carve, 0.85 * k);                // hollow out the field inside
+  const fill = f < 0 ? 0.12 + 0.1 * Math.sin(age * 0.008 + (x - y) * 5) : 0;
+  return Math.max(edge, fill) * k;
+}
+
+function waveGlow(e, px, py, age) {
+  const p = age / e.life;
+  const r = age * 0.55;
+  const dx = px - e.x, dy = py - e.y;
+  const d = Math.hypot(dx, dy);
+  // Perlin warp: the ring wobbles by angle (big, slow lobes) and frays locally (fine grain)
+  const a = Math.atan2(dy, dx), tt = age * 0.0009;
+  const lobes = noise(Math.cos(a) * 1.4 + e.seed, Math.sin(a) * 1.4, tt) * Math.min(r * 0.35, 140);
+  const fray = noise(px * 0.013, py * 0.013, tt * 2 + e.seed) * 34;
+  const dw = d - lobes - fray;
+  const width = 26 + 18 * noise(Math.cos(a) * 3 + e.seed, Math.sin(a) * 3, tt * 1.5);
+  const front = Math.exp(-Math.pow((dw - r) / width, 2));
+  const trail = dw < r ? 0.45 * Math.max(0, Math.sin((r - dw) * 0.06)) * Math.exp(-(r - dw) / 220) : 0;
+  const breakup = 0.65 + 0.55 * noise(px * 0.02 + e.seed, py * 0.02, tt * 3);   // patchy brightness
+  return (front + trail) * breakup * (1 - p);
+}
+
+// ---------- Audio (optional mic reactivity) ----------
+let analyser = null, freq = null, energy = 0, energyAvg = 0, lastDrop = 0, autoDrops = false;
+async function toggleMic() {
+  if (analyser) { analyser = null; document.getElementById('mic').textContent = 'off'; return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+    const ac = new AudioContext();
+    analyser = ac.createAnalyser(); analyser.fftSize = 1024; analyser.smoothingTimeConstant = 0.6;
+    ac.createMediaStreamSource(stream).connect(analyser);
+    freq = new Uint8Array(analyser.frequencyBinCount);
+    document.getElementById('mic').textContent = 'on';
+  } catch (err) { document.getElementById('mic').textContent = 'blocked'; }
+}
+function readAudio(now) {
+  if (!analyser) { energy *= 0.95; return; }
+  analyser.getByteFrequencyData(freq);
+  let bass = 0; for (let i = 1; i < 12; i++) bass += freq[i];
+  energy = bass / (11 * 255);
+  energyAvg = lerp(energyAvg, energy, 0.04);
+  if (autoDrops && energy > energyAvg * 1.35 && energy > 0.45 && now - lastDrop > 450) {
+    lastDrop = now;
+    spawn(Math.random() < 0.3 ? 'heart' : 'wave', Math.random() * innerWidth, Math.random() * innerHeight);
+  }
+}
+
+// ---------- Controls ----------
+let speed = 1;
+addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  const rx = () => innerWidth * (0.2 + Math.random() * 0.6), ry = () => innerHeight * (0.2 + Math.random() * 0.6);
+  if (k === '1') spawn('heart', rx(), ry());
+  else if (k === '2') spawn('wave', rx(), ry());
+  else if (k === 'm') toggleMic();
+  else if (k === 'a') { autoDrops = !autoDrops; document.getElementById('auto').textContent = autoDrops ? 'on' : 'off'; }
+  else if (k === 'f') document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+  else if (k === 'h') document.getElementById('hud').classList.toggle('hidden');
+  else if (e.key === 'ArrowUp') speed = Math.min(speed * 1.25, 6);
+  else if (e.key === 'ArrowDown') speed = Math.max(speed / 1.25, 0.15);
+});
+
+// ---------- Render loop ----------
+const buckets = Array.from({ length: TINTS * LEVELS }, () => []);
+let t = 0, last = performance.now();
+
+function frame(now) {
+  const dt = Math.min(now - last, 50); last = now;
+  readAudio(now);
+  t += dt * 0.00012 * speed * (1 + energy * 2.5);
+
+  for (let i = effects.length - 1; i >= 0; i--) if (now - effects[i].born > effects[i].life) effects.splice(i, 1);
+  const flipRate = 0.015 + energy * 0.08;
+  const sc = 0.035;
+
+  for (const b of buckets) b.length = 0;
+
+  for (let j = 0; j < rows; j++) {
+    const py = j * CELL_H + CELL_H * 0.5;
+    for (let i = 0; i < cols; i++) {
+      const px = i * CELL_W + CELL_W * 0.5;
+      // domain-warped noise for a flowing, liquid feel
+      const wx = noise(i * sc * 0.6, j * sc * 0.9, t * 0.7) * 2.2;
+      const wy = noise(i * sc * 0.6 + 40, j * sc * 0.9, t * 0.7) * 2.2;
+      let n = noise(i * sc + wx, j * sc * 1.45 + wy - t * 1.6, t);
+      n = n * 0.5 + 0.5 + energy * 0.25;
+
+      let glow = 0; carve = 0;
+      for (const e of effects) {
+        const age = now - e.born;
+        glow += e.kind === 'heart' ? heartGlow(e, px, py, age) : waveGlow(e, px, py, age);
+      }
+      glow = Math.min(glow, 1);
+
+      const v = Math.min(1, Math.max(0, (n - 0.36) * 1.5) * (1 - carve) + glow);
+      if (v < 0.04) continue;
+
+      const idx = j * cols + i;
+      if (Math.random() < flipRate * (0.3 + v)) glyphs[idx] = BRIGHT[(Math.random() * BRIGHT.length) | 0];
+      const ch = v > 0.55 || glow > 0.3 ? glyphs[idx] : RAMP[Math.min(RAMP.length - 1, (v / 0.55 * RAMP.length) | 0)];
+      if (ch === ' ') continue;
+
+      const level = Math.min(LEVELS - 1, (v * LEVELS) | 0);
+      const tint = Math.min(TINTS - 1, Math.round(Math.sqrt(glow) * (TINTS - 1)));
+      const b = buckets[tint * LEVELS + level];
+      b.push(ch, px, py);
+    }
+  }
+
+  ctx.fillStyle = '#05060a';
+  ctx.fillRect(0, 0, innerWidth, innerHeight);
+  ctx.font = `${FONT_PX}px ui-monospace, "SF Mono", Menlo, Consolas, monospace`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (let tI = 0; tI < TINTS; tI++) {
+    if (tI > TINTS / 2) { ctx.shadowColor = 'rgba(70,150,255,0.9)'; ctx.shadowBlur = 8; } else ctx.shadowBlur = 0;
+    for (let l = 0; l < LEVELS; l++) {
+      const b = buckets[tI * LEVELS + l];
+      if (!b.length) continue;
+      ctx.fillStyle = palette[tI][l];
+      for (let k = 0; k < b.length; k += 3) ctx.fillText(b[k], b[k + 1], b[k + 2]);
+    }
+  }
+  ctx.shadowBlur = 0;
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// auto-hide the hint after a bit
+setTimeout(() => document.getElementById('hud').classList.add('hidden'), 8000);
+</script>
+</body>
+</html>
