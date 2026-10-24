@@ -138,13 +138,28 @@
     channel.postMessage({ type: "hello" });
   }
 
-  function loop() {
+  // Runs fn(ms) on animation frames, capped at FPS. High refresh screens
+  // (120Hz, 144Hz) skip frames to land near 60; slower screens run as fast
+  // as they can. Every loop sees the same rAF timestamps and makes the same
+  // skip decisions, so the clock and the garden stay in step.
+  const FPS = 60;
+  const INTERVAL = 1000 / FPS;
+  function animate(fn) {
+    let next = 0;
+    function tick(ms) {
+      requestAnimationFrame(tick);
+      if (ms < next - 1) return; // 1ms slack for timestamp jitter
+      next = Math.max(next + INTERVAL, ms);
+      fn(ms);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  animate(() => {
     time = nowTime();
     state = at(time);
     for (const d of dials) d.draw();
-    requestAnimationFrame(loop);
-  }
-  requestAnimationFrame(loop);
+  });
 
   // --- The dial -------------------------------------------------------------
   const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
@@ -351,7 +366,7 @@
 
   window.MasterClock = {
     CYCLE, YEAR, TAU,
-    smooth, rainAt, at, upcoming, mountDial,
+    FPS, smooth, rainAt, at, upcoming, mountDial, animate,
     get state() { return state; },
     get time() { return nowTime(); },
     set time(v) { reanchor(v, anchor.speed); time = v; state = at(v); },

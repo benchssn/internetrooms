@@ -1228,9 +1228,8 @@ function frame(ms) {
   drawFallingLeaves(t);
   drawMotes(t);
   drawRain(t);
-  requestAnimationFrame(frame);
 }
-requestAnimationFrame(frame);
+MasterClock.animate(frame); // capped at MasterClock.FPS (60)
 </script>
 </body>
 </html>
