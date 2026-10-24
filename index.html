@@ -18,13 +18,23 @@
   a { display: block; padding: .6rem 0; color: #8aa4c8; text-decoration: none; }
   a:hover, a:focus { color: #cfe0ff; }
   a::before { content: "→ "; color: #3a4c6a; }
+  ul.sub { margin: -.4rem 0 .3rem 1.5rem; font-size: .875rem; }
+  ul.sub li { border: 0; }
+  ul.sub a { padding: .2rem 0; }
+  ul.sub a::before { content: "↳ "; }
 </style>
 </head>
 <body>
 <main>
   <h1>internetrooms</h1>
   <ul>
-    <li><a href="glyph-drift.html">glyph drift</a></li>
+    <li><a href="glyph-drift/index.html">glyph drift</a></li>
+    <li>
+      <a href="sine-garden/index.html">sine garden</a>
+      <ul class="sub">
+        <li><a href="sine-garden/clock.html">master clock</a></li>
+      </ul>
+    </li>
   </ul>
 </main>
 </body>
