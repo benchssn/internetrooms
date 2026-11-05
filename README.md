@@ -240,9 +240,43 @@ Every control has a visible label, errors are linked to their inputs with `aria-
 
 User accounts, databases, uploads, guestbook submissions, messaging, multiplayer, avatars, neighbourhoods, AI integrations, social feeds, monetisation, arbitrary user HTML/CSS/JS, and third-party media embeds.
 
+## Accounts (Milestone 5, Phase 1)
+
+People can create an account with email and password, verify their address, log in, stay logged in across reloads, reset a forgotten password and log out. Accounts don't hold any data yet — rooms are still saved in the browser — and there are no profiles, publishing or social features.
+
+| Route | Purpose |
+| --- | --- |
+| `/register` | Email, password and confirmation. Afterwards the user is told to verify their email — they are **not** signed in yet. Includes "send it again". |
+| `/login` | Email and password, with links to registration and password recovery. Unverified users are offered a new verification email. Returns to the page they came from (same-site paths only). |
+| `/forgot-password` | Sends a reset link. Always reports success so it can't be used to discover which emails have accounts. |
+| `/reset-password` | Choose a new password. Only works after arriving from a reset email. |
+| `/auth/callback` | Where every email link lands. Exchanges the one-time code, removes it from the address bar, then shows "you're in" or forwards reset links to `/reset-password`. Expired, used, or other-browser links get a clear explanation. |
+
+The site header and the editor toolbar show **Log in / Register**, or the signed-in email with **Log out**. If Supabase isn't configured, account links are hidden and the rest of the site works as before.
+
+### How it works
+
+- **Supabase Auth only** — no custom auth backend. Passwords go straight to Supabase; Internetrooms never stores them.
+- **Sessions:** supabase-js stores the session in the browser and refreshes it automatically (`persistSession`, `autoRefreshToken`). The app's auth context (`src/auth/`) exposes only the user's id and email — never tokens — and nothing logs tokens.
+- **One callback flow: PKCE.** The client uses `flowType: "pkce"` with `detectSessionInUrl: false`; only `/auth/callback` calls `exchangeCodeForSession`. Each code is exchanged once (safe under React StrictMode), then removed from the URL and history. Reset links are recognised by Supabase's `redirectType: "recovery"`, so every email uses the same redirect URL.
+- PKCE links must be opened **in the same browser** where they were requested. Otherwise the page explains this; for verification, the address is usually already confirmed and the user can simply log in.
+- Errors are mapped to short, safe messages (`src/auth/authErrors.ts`); raw server messages are never shown, and sign-up/reset responses don't reveal whether an account exists.
+- Logging out signs out this browser only (`scope: "local"`).
+
+### Supabase dashboard settings (required)
+
+In **Authentication → URL Configuration**:
+
+- **Site URL:** `https://internetrooms.net`
+- **Redirect URLs:** add `https://internetrooms.net/auth/callback**` (the `**` allows the `sb_flow_id` query parameter supabase-js adds). Add `http://localhost:5173/auth/callback**` too if you ever develop locally.
+
+In **Authentication → Sign In / Providers → Email**: keep **Confirm email** turned on.
+
+**Email delivery:** Supabase's built-in email service is for testing — it only sends to addresses in your Supabase organisation and is heavily rate-limited. Before inviting real users, set up custom SMTP in **Authentication → Emails → SMTP Settings**. The default email templates work as-is with PKCE.
+
 ## Supabase (Milestone 5, in progress)
 
-Internetrooms is being connected to [Supabase](https://supabase.com). So far only the **client connection** exists: there are no database tables, no sign-in and no social features yet, and everything above still works entirely in the browser.
+Internetrooms is connected to [Supabase](https://supabase.com) for accounts (see above). There are no database tables or social features yet, and rooms still live entirely in the browser.
 
 ### Setup
 
@@ -265,11 +299,11 @@ Use only the **publishable** key. Vite inlines `VITE_*` variables into the brows
 | File | Purpose |
 | --- | --- |
 | `src/supabase/config.ts` | Reads and checks the env vars (missing, placeholder, malformed URL, secret key) |
-| `src/supabase/client.ts` | `getSupabaseClient()` — one shared client, created on first use. Throws a `SupabaseConfigError` with setup instructions if not configured. Sessions aren't persisted yet (no auth). |
+| `src/supabase/client.ts` | `getSupabaseClient()` — one shared client, created on first use (PKCE, persisted sessions). Throws a `SupabaseConfigError` with setup instructions if not configured. |
 | `src/supabase/connectionCheck.ts` | `checkSupabaseConnection()` — calls the Auth service's public health endpoint with the publishable key. Needs no tables and no signed-in user. |
 | `src/supabase/devConnectionCheck.ts` | Logs the check's result on startup in development only (`import.meta.env.DEV`); stripped from production builds |
 
-Nothing in the app calls Supabase yet, so it isn't included in the production bundle until a feature uses it.
+supabase-js is loaded as a separate chunk after the page renders, so it doesn't slow down the first paint.
 
 ## Getting started
 
@@ -309,7 +343,7 @@ Artwork files referenced by `imageUrl` should live under `public/` (for example 
 
 ### Milestone 4
 
-- Rooms and uploaded images live only in this browser. There's no export/import or sync yet (the raw room JSON can be downloaded from the editor only when it fails to load).
+- Accounts don't store rooms yet; rooms and uploaded images live only in this browser. There's no export/import or sync yet (the raw room JSON can be downloaded from the editor only when it fails to load).
 - IndexedDB storage can be cleared by the browser under storage pressure or by "clear site data"; rooms then show "image unavailable" for missing uploads.
 - Animated GIFs become still images when uploaded.
 - Undo history is kept in memory and resets when the page reloads.

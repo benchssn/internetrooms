@@ -60,7 +60,7 @@ export function HomePage() {
             your own: arrange widgets, write, add images and links, pick your
             fonts, colours and backgrounds, and scatter a few stars around.
           </p>
-          <p>No code. No accounts. Everything stays in your browser.</p>
+          <p>No code. Accounts are optional, and your room stays in your browser.</p>
         </div>
       </section>
 

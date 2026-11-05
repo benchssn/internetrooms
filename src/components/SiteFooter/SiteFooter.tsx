@@ -13,7 +13,7 @@ export function SiteFooter() {
           <Link to="/room">My room</Link>
         </nav>
         <p className={styles.note}>
-          Rooms are saved in your own browser. No accounts, no tracking, no feeds.
+          Rooms are saved in your own browser. Accounts are optional. No tracking, no feeds.
         </p>
       </div>
     </footer>

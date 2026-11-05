@@ -17,10 +17,15 @@ export function getSupabaseClient(): SupabaseClient {
   if (!result.ok) throw new SupabaseConfigError(result.problems);
   client = createClient(result.config.url, result.config.publishableKey, {
     auth: {
-      // No sign-in exists yet, so don't store or refresh sessions.
-      // Revisit when authentication is added.
-      persistSession: false,
-      autoRefreshToken: false,
+      // Supabase Auth manages the session: it is stored in the browser
+      // (localStorage) and refreshed automatically, so users stay signed in
+      // across reloads. Internetrooms never reads or stores tokens itself.
+      persistSession: true,
+      autoRefreshToken: true,
+      // Email links use the PKCE flow: Supabase redirects to /auth/callback
+      // with a one-time `code`, which that page exchanges explicitly. The
+      // client must not also try to read sessions from URLs on its own.
+      flowType: "pkce",
       detectSessionInUrl: false,
     },
   });
