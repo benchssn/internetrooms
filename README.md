@@ -240,6 +240,37 @@ Every control has a visible label, errors are linked to their inputs with `aria-
 
 User accounts, databases, uploads, guestbook submissions, messaging, multiplayer, avatars, neighbourhoods, AI integrations, social feeds, monetisation, arbitrary user HTML/CSS/JS, and third-party media embeds.
 
+## Supabase (Milestone 5, in progress)
+
+Internetrooms is being connected to [Supabase](https://supabase.com). So far only the **client connection** exists: there are no database tables, no sign-in and no social features yet, and everything above still works entirely in the browser.
+
+### Setup
+
+1. Copy `.env.example` to `.env.local` (ignored by Git).
+2. Fill in the two values from the Supabase dashboard → **Project Settings → API**:
+
+   ```bash
+   VITE_SUPABASE_URL=https://imtbvgslopyfxddysyon.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_…
+   ```
+
+3. Restart `npm run dev`. The browser console shows either `Supabase reachable: …` or a clear explanation of what's wrong.
+
+Use only the **publishable** key. Vite inlines `VITE_*` variables into the browser bundle, so a secret (`sb_secret_…`) or `service_role` key would be exposed to every visitor. The app refuses to use one.
+
+**Production (Render):** add the same two variables in the Render service's **Environment** settings and redeploy. Vite reads them at **build** time, so a change needs a new build.
+
+### Code
+
+| File | Purpose |
+| --- | --- |
+| `src/supabase/config.ts` | Reads and checks the env vars (missing, placeholder, malformed URL, secret key) |
+| `src/supabase/client.ts` | `getSupabaseClient()` — one shared client, created on first use. Throws a `SupabaseConfigError` with setup instructions if not configured. Sessions aren't persisted yet (no auth). |
+| `src/supabase/connectionCheck.ts` | `checkSupabaseConnection()` — calls the Auth service's public health endpoint with the publishable key. Needs no tables and no signed-in user. |
+| `src/supabase/devConnectionCheck.ts` | Logs the check's result on startup in development only (`import.meta.env.DEV`); stripped from production builds |
+
+Nothing in the app calls Supabase yet, so it isn't included in the production bundle until a feature uses it.
+
 ## Getting started
 
 ```bash
