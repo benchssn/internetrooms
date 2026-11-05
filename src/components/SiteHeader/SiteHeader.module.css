@@ -2,54 +2,47 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  background: linear-gradient(180deg, #3a50c8 0%, #23349a 100%);
-  border-bottom: 2px solid var(--border-dark);
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+  background: #ffffff;
+  border-bottom: 1px solid #111111;
 }
 
 .skipLink {
   position: absolute;
-  left: var(--space-sm);
+  left: 1rem;
   top: -100px;
-  padding: var(--space-sm) var(--space-md);
-  background: var(--room-accent);
-  color: var(--room-text);
+  padding: 0.5rem 1rem;
+  background: #111111;
+  color: #ffffff !important;
   font-weight: 700;
-  border: 2px solid var(--border-dark);
   z-index: 30;
 }
 
 .skipLink:focus {
-  top: var(--space-sm);
+  top: 0.5rem;
 }
 
 .inner {
-  max-width: var(--content-max);
+  max-width: 1200px;
   margin: 0 auto;
-  padding: var(--space-xs) var(--space-md);
+  padding: 0 clamp(1rem, 4vw, 2.5rem);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-xs) var(--space-md);
+  gap: 0 1.5rem;
 }
 
 .brand,
 .brand:visited {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-sm);
-  min-height: 44px;
-  font-family: var(--font-heading);
-  font-size: 1.2rem;
+  min-height: 56px;
+  font-family: var(--site-font-display);
+  font-size: 1.15rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
-  color: #ffffff;
+  letter-spacing: -0.02em;
+  color: #111111;
   text-decoration: none;
-}
-
-.brandStar {
-  image-rendering: pixelated;
 }
 
 .nav {
@@ -62,43 +55,50 @@
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-xs);
+  gap: 0 1.5rem;
 }
 
 .navLink,
 .navLink:visited {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
-  padding: 0 var(--space-sm);
-  font-family: var(--font-system);
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #ffffff;
+  min-height: 56px;
+  font-size: 0.95rem;
+  color: #111111;
   text-decoration: none;
-  border: 2px solid transparent;
 }
 
-.navLink:hover {
-  border-color: rgba(255, 255, 255, 0.6);
-  background: rgba(255, 255, 255, 0.1);
+/* A thin underline that grows on hover and stays for the current page. */
+.navLink::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  height: 1px;
+  background: #111111;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 180ms ease;
 }
 
-.active,
-.active:visited {
-  background: var(--room-accent);
-  color: var(--room-text);
-  border-color: var(--border-dark);
-  box-shadow: inset 1px 1px 0 var(--border-light);
+.navLink:hover::after,
+.active::after {
+  transform: scaleX(1);
 }
 
-.active:hover {
-  background: var(--room-accent);
+.active {
+  font-weight: 700;
 }
 
 @media (max-width: 479px) {
   .inner {
-    padding: var(--space-xs) var(--space-sm);
+    gap: 0;
+  }
+
+  .brand {
+    min-height: 48px;
   }
 
   .nav,
@@ -106,14 +106,18 @@
     width: 100%;
   }
 
-  .navList > li {
-    flex: 1 1 auto;
+  .navList {
+    justify-content: space-between;
+    gap: 0 0.75rem;
+    border-top: 1px solid #d9d9d9;
   }
 
   .navLink {
-    justify-content: center;
-    width: 100%;
-    padding: 0 var(--space-xs);
-    font-size: 0.85rem;
+    min-height: 44px;
+    font-size: 0.9rem;
+  }
+
+  .navLink::after {
+    bottom: 10px;
   }
 }

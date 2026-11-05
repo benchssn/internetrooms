@@ -1,0 +1,26 @@
+/*
+ * Constrained widget layout: two equal columns, widgets are "half" (one
+ * column) or "full" (both). Templates set --widget-gap.
+ */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--widget-gap, 1.5rem);
+  align-items: start;
+  min-width: 0;
+}
+
+.cell {
+  min-width: 0;
+}
+
+.cell[data-width="full"] {
+  grid-column: 1 / -1;
+}
+
+/* Narrow rooms (phones, or the editor's mobile preview): one column. */
+@container room (max-width: 640px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -15,7 +15,7 @@ export function IdentitySection({ room, update, errorFor }: SectionProps) {
         value={room.title}
         maxLength={LIMITS.title}
         error={errorFor("title")}
-        onChange={(title) => update((r) => ({ ...r, title }))}
+        onChange={(title) => update((r) => ({ ...r, title }), { coalesceKey: "title" })}
       />
       <TextAreaField
         label="Tagline"
@@ -23,7 +23,7 @@ export function IdentitySection({ room, update, errorFor }: SectionProps) {
         value={room.tagline}
         maxLength={LIMITS.tagline}
         error={errorFor("tagline")}
-        onChange={(tagline) => update((r) => ({ ...r, tagline }))}
+        onChange={(tagline) => update((r) => ({ ...r, tagline }), { coalesceKey: "tagline" })}
       />
     </EditorSection>
   );

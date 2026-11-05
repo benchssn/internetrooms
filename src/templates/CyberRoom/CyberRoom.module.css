@@ -22,7 +22,7 @@
   background-color: var(--room-bg);
   color: var(--room-text);
   padding: var(--space-lg) var(--space-md);
-  font-family: var(--font-body);
+  font-family: var(--room-font-body, var(--font-body));
 }
 
 /* ---- Background patterns ---- */
@@ -140,10 +140,23 @@
   box-shadow: 0 0 8px var(--room-accent);
 }
 
-.title {
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: var(--room-align, flex-start);
+  gap: var(--space-md);
   margin: 0 0 var(--space-sm);
-  font-family: var(--cyber-font-display);
-  font-size: clamp(1.5rem, 5vw, 2.6rem);
+}
+
+.hud {
+  text-align: var(--room-align, left);
+}
+
+.title {
+  margin: 0;
+  min-width: 0;
+  font-family: var(--room-font-heading, var(--cyber-font-display));
+  font-size: calc(clamp(1.5rem, 5vw, 2.6rem) * var(--room-heading-scale, 1));
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -174,18 +187,11 @@
 /* ---- Panels ---- */
 
 .grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-lg);
-  align-items: start;
+  --widget-gap: var(--space-lg);
 }
 
 .panel {
   min-width: 0;
-}
-
-.wide {
-  grid-column: 1 / -1;
 }
 
 .panelBar {
@@ -204,8 +210,8 @@
 
 .panelTitle {
   margin: 0;
-  font-family: var(--cyber-font-display);
-  font-size: 0.95rem;
+  font-family: var(--room-font-heading, var(--cyber-font-display));
+  font-size: calc(0.95rem * var(--room-heading-scale, 1));
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--room-text);
@@ -226,11 +232,12 @@
 .panelBody {
   padding: var(--space-md);
   min-width: 0;
+  text-align: var(--room-align, left);
 }
 
 .ownerName {
   margin: 0 0 var(--space-sm);
-  font-family: var(--cyber-font-display);
+  font-family: var(--room-font-heading, var(--cyber-font-display));
   font-size: 1.15rem;
   letter-spacing: 0.06em;
   color: var(--room-accent);
@@ -272,7 +279,7 @@
 
 .trackTitle {
   margin: 0;
-  font-family: var(--cyber-font-display);
+  font-family: var(--room-font-heading, var(--cyber-font-display));
   font-size: 1.25rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -402,6 +409,25 @@ a.link:focus-visible {
   outline-offset: 2px;
 }
 
+/* ---- Text and image widgets ---- */
+
+.text p {
+  margin: 0 0 var(--space-md);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+
+.text p:last-child {
+  margin-bottom: 0;
+}
+
+.imageFigure {
+  margin: 0;
+  border: 1px solid color-mix(in srgb, var(--room-accent) 60%, transparent);
+  background: var(--room-bg);
+}
+
 /* ---- Footer ---- */
 
 .footer {
@@ -422,13 +448,9 @@ a.link:focus-visible {
   opacity: 0.8;
 }
 
-@media (max-width: 767px) {
+@container room (max-width: 640px) {
   .page {
     padding: var(--space-md) var(--space-sm);
-  }
-
-  .grid {
-    grid-template-columns: minmax(0, 1fr);
   }
 
   .hud {

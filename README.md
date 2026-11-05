@@ -1,12 +1,90 @@
 # Internetrooms
 
-Internetrooms is an experimental creative web platform inspired by early personal websites. Milestone 1 delivered one Classic Web room template — a nostalgic, responsive personal page driven by local JSON configuration. Milestone 2 adds a visual editor so anyone can personalise that room without touching code. Milestone 3 turns it into a small multi-page site with a homepage, a template library (Classic Web, Cyber Room, Dream Room) and a separate saved-room viewer.
+Internetrooms is an experimental creative web platform inspired by early personal websites. Milestone 1 delivered one Classic Web room template — a nostalgic, responsive personal page driven by local JSON configuration. Milestone 2 adds a visual editor so anyone can personalise that room without touching code. Milestone 3 turns it into a small multi-page site with a homepage, a template library (Classic Web, Cyber Room, Dream Room) and a separate saved-room viewer. **Milestone 4** turns the editor into an expressive personal website builder: ordered, resizable widgets, new content widgets, typography, gradients and uploaded images, decorations, and undo/redo — plus a minimal monochrome homepage.
+
+## Milestone 4 — Creative Freedom
+
+### Homepage
+
+`/` is now a minimal editorial page: white (`#FFFFFF`) background, near-black (`#111111`) text, black-and-white navigation, large type and thin dividers. The site chrome (header, footer, templates page, 404, empty-room page) shares this monochrome style. Room templates keep their own colourful styling.
+
+### What you can do in the editor (`/edit`)
+
+| Area | What it does |
+| --- | --- |
+| **Layout & widgets** | Reorder widgets by dragging the ⠿ handle (mouse or touch), with the arrow keys on the handle, or with Up/Down buttons. Make each widget **Half** or **Full** width. Show or hide any widget. **Reset widget positions** restores the default order and widths without touching content. Open a widget with **Edit** to change its content. |
+| **New widgets** | **Text block** (plain text; blank lines make paragraphs), **Image block** (one image with alt text and an optional caption), **Link collection** (a titled list of links). Add as many as you like (up to 40 widgets in total), and **Duplicate** or **Delete** them. The original About Me, Art Gallery, Music and Favourite Links widgets are always present — hide them rather than delete. |
+| **Typography** | Heading font, body font (curated system fonts only — nothing is downloaded), heading size (Small → Huge), text alignment and text colour. "Template default" keeps each template's own fonts. |
+| **Background** | Colour & pattern (plain, pixel stars, checkerboard, retro grid), a two-colour **gradient** (with presets and five directions), or an **image** (web link or upload; fill or tile). Settings for each type are remembered when you switch. |
+| **Decorations** | Pixel stars, hearts, sparkles, dividers, stickers and retro 88×31-style badges. Each sits in one of five fixed slots (beside the title, under the header, after the widgets, in the footer), so decorations never cover content. Animated ones stop when reduced motion is preferred. Up to 16. |
+| **Image library** | Uploaded images can be reused anywhere an image goes (gallery, image blocks, background) and deleted here — with a warning if a room still uses them. Images are never deleted automatically, even if the widget using them is hidden or removed. |
+| **Undo / Redo** | Toolbar buttons, or Ctrl/⌘+Z and Ctrl/⌘+Shift+Z (or Ctrl+Y) when focus isn't in a text field (inside fields the browser's own undo applies). Up to 30 steps. Typing in one field is grouped into a single step. Deleting a widget shows a notice with an **Undo** button. Switching template on `/templates` is undoable too. |
+| **Preview** | The live preview has a **Desktop / Mobile** toggle. The mobile view really is narrow: room layouts use CSS container queries, so widgets stack into one column exactly as on a phone. **Preview** still shows the room without any editor chrome. |
+
+### Image uploads
+
+- Accepted: PNG, JPEG, GIF, WebP up to 5 MB. **SVG is always refused** (it can contain code).
+- Each file is checked by size, declared type **and** its actual byte signature — a renamed file is rejected.
+- Accepted images are decoded and re-drawn on a canvas, then saved as WebP (or PNG). This strips metadata such as camera GPS data, scales anything over 2048px down, and means only plain pixels are stored. Animated GIFs become still images.
+- Images are stored in **IndexedDB** (`internetrooms-assets`), not localStorage. The room JSON stores only an asset id such as `asset-lz3k1-ab12cd`. The original file name or path is never stored.
+
+### Data model (schema v2)
+
+```ts
+interface RoomConfig {
+  schemaVersion: 2;
+  id: string;
+  template: "classic-web" | "cyber-room" | "dream-room";
+  title: string;
+  tagline: string;
+  theme: {
+    backgroundColor, primaryColor, secondaryColor, accentColor, textColor: string; // #RRGGBB
+    backgroundPattern: "plain" | "stars" | "checkerboard" | "grid";
+    background: { mode: "pattern" | "gradient" | "image"; gradient: {...}; image: {...} };
+    typography: { headingFont; bodyFont; headingSize; align };
+  };
+  layout: { widgets: WidgetInstance[] };   // ordered
+  decorations: { id; kind; slot }[];
+}
+
+type WidgetInstance =                      // discriminated union on `type`
+  | { type: "about"; content: { displayName; bio } }
+  | { type: "gallery"; content: { artwork: RoomArtwork[] } }
+  | { type: "music"; content: { music: RoomMusic | null } }
+  | { type: "links"; content: { links: RoomLink[] } }
+  | { type: "text"; content: { title; body } }
+  | { type: "image"; content: { image: ImageSource | null; alt; caption } }
+  | { type: "link-collection"; content: { title; links: RoomLink[] } };
+// every widget also has: id, visible, width: "half" | "full"
+
+type ImageSource = { kind: "url"; url: string } | { kind: "asset"; assetId: string };
+```
+
+See `src/types/room.ts` for the full definitions. The old v1 types live in `src/types/roomV1.ts` for migration only.
+
+### Migration from earlier milestones
+
+Rooms saved by Milestones 1–3 (`schemaVersion: 1`) are migrated automatically when the app opens (`src/storage/migrations.ts`):
+
+- Title, tagline, display name, biography, artwork, music and links are all carried over unchanged (artwork `imageUrl` becomes an `ImageSource`).
+- The `widgets` visibility flags become ordered widget instances (About, Music, Gallery, Links) with the same visibility. The old `guestbook` flag held no content and is dropped.
+- Template and theme colours are kept; rooms with no pattern get the original starfield; new background and typography settings start from neutral defaults.
+- Before anything is changed, the original stored text is copied to `internetrooms:room:room-001:backups` (the three most recent distinct backups are kept). The stored room itself is only replaced when you press **Save**. If a backup can't be written, Save refuses to overwrite.
+- A notice in the editor says the room was upgraded. If saved data can't be read or migrated, the default room is shown with a warning and a **Download saved data** button, and the stored data is left untouched.
+
+### How rendering works
+
+`RoomRenderer` (`src/templates/RoomRenderer.tsx`) is still the only rendering path — editor preview, Preview mode, `/room` and template miniatures. Templates no longer lay out widgets themselves:
+
+- `templates/shared/RoomWidgets.tsx` renders the visible widgets in order on a two-column grid (half = one column, full = both) and holds the content renderers for every widget type.
+- Each template supplies only a **skin**: a frame component (window, HUD panel, soft card) and class names for content. Content and persistence logic is never duplicated.
+- `templates/shared/` also handles theme/typography CSS variables, custom backgrounds, decoration slots and image resolution (URL or IndexedDB asset).
 
 ## Routes (Milestone 3)
 
 | Route | What it shows |
 | --- | --- |
-| `/` | The Internetrooms homepage |
+| `/` | The Internetrooms homepage (monochrome, Milestone 4) |
 | `/templates` | The template library — pick Classic Web, Cyber Room or Dream Room |
 | `/edit` | The visual room editor (with live preview and Preview mode) |
 | `/room` | Your most recently **saved** room, as a visitor would see it |
@@ -197,6 +275,18 @@ The Classic Web template reads that configuration and renders the page. No backe
 Artwork files referenced by `imageUrl` should live under `public/` (for example `public/assets/images/`).
 
 ## Known limitations
+
+### Milestone 4
+
+- Rooms and uploaded images live only in this browser. There's no export/import or sync yet (the raw room JSON can be downloaded from the editor only when it fails to load).
+- IndexedDB storage can be cleared by the browser under storage pressure or by "clear site data"; rooms then show "image unavailable" for missing uploads.
+- Animated GIFs become still images when uploaded.
+- Undo history is kept in memory and resets when the page reloads.
+- Drag-and-drop reorders within the editor's layout list (not by dragging in the preview).
+- Hidden widgets with incomplete required fields still block saving (they're opened and flagged so they're easy to find).
+- Remote image URLs are still loaded directly from their hosts, which can see visitors' IP addresses.
+
+### Earlier milestones
 
 - `/room` is local to your browser and is not a public page; there is no publishing or sharing yet.
 - Switching templates replaces your custom colours with the new template's defaults (your content is kept, and nothing is saved until you press Save).

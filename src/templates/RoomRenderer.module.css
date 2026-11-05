@@ -1,0 +1,6 @@
+/* Templates respond to the room's own width, not the viewport's. */
+.container {
+  container: room / inline-size;
+  width: 100%;
+  min-width: 0;
+}

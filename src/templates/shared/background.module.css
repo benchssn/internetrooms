@@ -1,0 +1,15 @@
+/*
+ * Applied to a template's page element when the user chose a gradient or
+ * an image background. Overrides the template's own pattern layers.
+ */
+.custom {
+  background-image: var(--room-bg-layer) !important;
+  background-size: var(--room-bg-size, cover) !important;
+  background-repeat: var(--room-bg-repeat, no-repeat) !important;
+  background-position: center !important;
+}
+
+.custom::before,
+.custom::after {
+  display: none !important;
+}

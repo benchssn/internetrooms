@@ -1,0 +1,111 @@
+.slot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 0.75rem;
+  min-width: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.wide {
+  flex-basis: 100%;
+}
+
+.item {
+  display: inline-flex;
+  line-height: 0;
+}
+
+.sprite {
+  display: block;
+  image-rendering: pixelated;
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.35));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .item[data-kind="pixel-star"],
+  .item[data-kind="sparkle"] {
+    animation: twinkle 3.2s ease-in-out infinite alternate;
+  }
+
+  .item[data-kind="sparkle"] {
+    animation-delay: -1.6s;
+  }
+
+  .item[data-kind="sticker-cd"] {
+    animation: spin 14s linear infinite;
+  }
+}
+
+@keyframes twinkle {
+  from {
+    opacity: 0.55;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.divider {
+  flex: 1 1 100%;
+  text-align: center;
+  letter-spacing: 0.3em;
+  font-size: 0.9rem;
+  color: var(--room-accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 88px;
+  height: 31px;
+  padding: 0 6px;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+  text-transform: uppercase;
+  text-align: center;
+  border: 1px solid #000000;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.6),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.35);
+}
+
+.construction {
+  color: #000000;
+  background: repeating-linear-gradient(
+    -45deg,
+    #ffd23f 0 6px,
+    #1b1b1b 6px 12px
+  );
+  text-shadow:
+    0 0 2px #ffd23f,
+    0 0 2px #ffd23f,
+    0 0 3px #ffd23f;
+}
+
+.bestViewed {
+  color: #ffffff;
+  background: linear-gradient(180deg, #3a50c8, #1b2775);
+  max-width: 120px;
+}
+
+.handmade {
+  color: #6b1239;
+  background: linear-gradient(180deg, #ffe3ef, #ffb6d1);
+}

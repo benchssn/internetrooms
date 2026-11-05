@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import App from "./App";
 import { getDefaultRoom } from "./data/defaultRoom";
 import { STORAGE_KEY } from "./storage/roomStorage";
+import { legacyRoomV1, textWidget, widgetOf } from "./test/rooms";
 import { TEMPLATE_REGISTRY } from "./templates/templateRegistry";
 import type { RoomConfig } from "./types/room";
 
@@ -29,19 +30,27 @@ describe("routes", () => {
   it("/ renders the homepage, not the editor", () => {
     renderAt("/");
     expect(
-      screen.getByRole("heading", { level: 1, name: "internetrooms" }),
+      screen.getByRole("heading", { level: 1, name: "the internet belongs to you." }),
     ).toBeInTheDocument();
-    expect(screen.getByText("a place to get lost, not stuck.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Create your room" })).toHaveAttribute(
-      "href",
-      "/templates",
-    );
-    expect(screen.getByRole("link", { name: "Edit your room" })).toHaveAttribute(
-      "href",
-      "/edit",
-    );
+    expect(
+      screen.getByText(
+        "Build a room. Make it yours. Create something strange, beautiful, personal, or completely unexpected.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /create a room/i })).toHaveAttribute("href", "/templates");
+    expect(screen.getByRole("link", { name: "Edit your room" })).toHaveAttribute("href", "/edit");
     expect(screen.queryByRole("button", { name: "Save" })).not.toBeInTheDocument();
     expect(document.title).toBe("internetrooms");
+  });
+
+  it("/ uses the monochrome site styling", () => {
+    renderAt("/");
+    const site = document.querySelector('[data-theme="monochrome"]') as HTMLElement;
+    expect(site).not.toBeNull();
+    const style = getComputedStyle(site);
+    expect(style.backgroundColor).toBe("rgb(255, 255, 255)");
+    expect(style.color).toBe("rgb(17, 17, 17)");
+    expect(site).toContainElement(screen.getByRole("navigation", { name: "Main" }));
   });
 
   it("/ previews all three templates", () => {
@@ -69,9 +78,7 @@ describe("routes", () => {
     expect(screen.getByRole("button", { name: "Keep Classic Web" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Use Cyber Room" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Use Dream Room" })).toBeInTheDocument();
-    expect(screen.getByRole("note")).toHaveTextContent(
-      /changes your colours and background pattern/i,
-    );
+    expect(screen.getByRole("note")).toHaveTextContent(/changes your colours and background/i);
   });
 
   it("unknown routes render the 404 page", () => {
@@ -104,6 +111,7 @@ describe("/room", () => {
     const room = getDefaultRoom();
     room.title = "my saved hideout";
     room.template = "cyber-room";
+    room.layout.widgets.unshift(textWidget("t1", "Diary", "a saved entry"));
     saveToStorage(room);
 
     renderAt("/room");
@@ -121,6 +129,7 @@ describe("/room", () => {
       "/",
     );
     expect(screen.getByText(/saved in this browser only/i)).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Diary" })).toHaveTextContent("a saved entry");
   });
 
   it("explains when nothing has been saved yet", () => {
@@ -140,19 +149,17 @@ describe("/room", () => {
     expect(storedRaw()).toBe("{broken");
   });
 
-  it("reads legacy Milestone 1 rooms (no pattern, classic template)", () => {
-    const legacy = getDefaultRoom();
+  it("reads legacy Milestone 1–3 rooms through the migration", () => {
+    const legacy = legacyRoomV1({ title: "legacy room" });
     delete legacy.theme.backgroundPattern;
-    legacy.title = "legacy room";
-    saveToStorage(legacy);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(legacy));
 
     renderAt("/room");
     const page = screen.getByTestId("room-page");
     expect(page).toHaveAttribute("data-template", "classic-web");
     expect(page).toHaveAttribute("data-pattern", "stars");
-    expect(
-      screen.getByRole("heading", { level: 1, name: "legacy room" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "legacy room" })).toBeInTheDocument();
+    expect(screen.getByText("old friend")).toBeInTheDocument();
   });
 
   it("shows the last save, not unsaved edits", async () => {
@@ -177,7 +184,7 @@ describe("navigation", () => {
   it("navigates with links and supports back/forward", async () => {
     const { user } = renderAt("/");
 
-    await user.click(screen.getByRole("link", { name: "Create your room" }));
+    await user.click(screen.getByRole("link", { name: /create a room/i }));
     expect(window.location.pathname).toBe("/templates");
     expect(
       screen.getByRole("heading", { level: 1, name: /choose your room template/i }),
@@ -197,7 +204,7 @@ describe("navigation", () => {
     act(() => window.history.back());
     await waitFor(() => expect(window.location.pathname).toBe("/"));
     expect(
-      await screen.findByRole("heading", { level: 1, name: "internetrooms" }),
+      await screen.findByRole("heading", { level: 1, name: "the internet belongs to you." }),
     ).toBeInTheDocument();
 
     act(() => window.history.forward());
@@ -269,18 +276,14 @@ describe("template selection", () => {
     expect(stored.title).toBe("my saved classic room");
   });
 
-  it("preserves room content when switching templates", async () => {
+  it("preserves widget content, order and settings when switching templates", async () => {
     const room = getDefaultRoom();
-    room.owner.bio = "a bio worth keeping";
-    room.music = { title: "Night Drive", artist: "Modem", description: "vibes" };
-    room.links.push({ id: "l2", label: "Zine", url: "https://zine.example.com" });
-    room.artwork.push({
-      id: "a2",
-      title: "Second Piece",
-      imageUrl: "https://example.com/two.png",
-      alt: "a second piece",
-    });
-    room.widgets.links = false;
+    widgetOf(room, "about").content.bio = "a bio worth keeping";
+    widgetOf(room, "music").content.music = { title: "Night Drive", artist: "Modem", description: "vibes" };
+    widgetOf(room, "links").visible = false;
+    room.layout.widgets.unshift(textWidget("t1", "Diary", "kept across templates"));
+    room.theme.typography.headingFont = "serif";
+    room.decorations = [{ id: "d1", kind: "heart", slot: "footer" }];
     saveToStorage(room);
 
     const { user } = renderAt("/templates");
@@ -288,20 +291,27 @@ describe("template selection", () => {
     await user.click(screen.getByRole("link", { name: "Templates" }));
     await user.click(screen.getByRole("button", { name: "Use Cyber Room" }));
 
-    expect(screen.getByLabelText(/biography/i)).toHaveValue("a bio worth keeping");
-    expect(screen.getByLabelText(/track title/i)).toHaveValue("Night Drive");
-    expect(screen.getAllByLabelText(/^label/i).map((el) => (el as HTMLInputElement).value)).toEqual([
-      "Internet Archive",
-      "Zine",
-    ]);
-    expect(screen.getAllByLabelText(/alternative text/i)).toHaveLength(2);
-    expect(screen.getByRole("switch", { name: /show favourite links/i })).not.toBeChecked();
-
     const preview = livePreview();
+    const order = Array.from(preview.querySelectorAll("[data-widget-type]")).map((el) =>
+      el.getAttribute("data-widget-type"),
+    );
+    expect(order).toEqual(["text", "about", "music", "gallery"]);
     expect(within(preview).getByText("a bio worth keeping")).toBeInTheDocument();
     expect(within(preview).getByText("Night Drive")).toBeInTheDocument();
-    expect(
-      within(preview).queryByRole("region", { name: "Favourite Links" }),
-    ).not.toBeInTheDocument();
+    expect(within(preview).getByRole("region", { name: "Diary" })).toHaveTextContent("kept across templates");
+    expect(within(preview).queryByRole("region", { name: "Favourite Links" })).not.toBeInTheDocument();
+    expect(screen.getByRole("switch", { name: /show favourite links/i })).not.toBeChecked();
+    const page = within(preview).getByTestId("room-page");
+    expect(page).toHaveAttribute("data-template", "cyber-room");
+    expect(page.style.getPropertyValue("--room-font-heading")).toMatch(/Georgia/);
+    expect(preview.querySelector('[data-slot="footer"] [data-kind="heart"]')).not.toBeNull();
+  });
+
+  it("can be undone in the editor", async () => {
+    const { user } = renderAt("/templates");
+    await user.click(screen.getByRole("button", { name: "Use Dream Room" }));
+    await user.click(screen.getByRole("button", { name: /undo/i }));
+    expect(within(livePreview()).getByTestId("room-page")).toHaveAttribute("data-template", "classic-web");
+    expect(screen.getByTestId("save-state")).toHaveTextContent("All changes saved");
   });
 });

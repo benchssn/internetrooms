@@ -14,7 +14,7 @@
   background-color: var(--room-bg);
   color: var(--room-text);
   padding: var(--space-xl) var(--space-md);
-  font-family: "Trebuchet MS", Verdana, sans-serif;
+  font-family: var(--room-font-body, "Trebuchet MS", Verdana, sans-serif);
 }
 
 /* Base gradient sits under every pattern. */
@@ -189,7 +189,15 @@
 
 .header {
   padding: var(--space-lg) var(--space-lg) var(--space-md);
-  text-align: center;
+  text-align: var(--room-align, center);
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: var(--room-align, center);
+  gap: var(--space-md);
+  margin: 0 0 var(--space-sm);
 }
 
 .brand {
@@ -201,11 +209,12 @@
 }
 
 .title {
-  margin: 0 0 var(--space-sm);
-  font-family: var(--dream-font-display);
+  margin: 0;
+  min-width: 0;
+  font-family: var(--room-font-heading, var(--dream-font-display));
   font-style: italic;
   font-weight: 400;
-  font-size: clamp(1.7rem, 5vw, 2.8rem);
+  font-size: calc(clamp(1.7rem, 5vw, 2.8rem) * var(--room-heading-scale, 1));
   line-height: 1.15;
   overflow-wrap: anywhere;
 }
@@ -224,15 +233,13 @@
 }
 
 .grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-lg);
-  align-items: start;
+  --widget-gap: var(--space-lg);
 }
 
 .card {
   padding: var(--space-md) var(--space-lg) var(--space-lg);
   min-width: 0;
+  text-align: var(--room-align, left);
   transition: transform 220ms ease;
 }
 
@@ -240,19 +247,15 @@
   transform: translateY(-2px);
 }
 
-.wide {
-  grid-column: 1 / -1;
-}
-
 .cardTitle {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
   margin: 0 0 var(--space-md);
-  font-family: var(--dream-font-display);
+  font-family: var(--room-font-heading, var(--dream-font-display));
   font-style: italic;
   font-weight: 400;
-  font-size: 1.3rem;
+  font-size: calc(1.3rem * var(--room-heading-scale, 1));
   overflow-wrap: anywhere;
 }
 
@@ -269,7 +272,7 @@
 
 .ownerName {
   margin: 0 0 var(--space-sm);
-  font-family: var(--dream-font-display);
+  font-family: var(--room-font-heading, var(--dream-font-display));
   font-size: 1.15rem;
   font-weight: 700;
 }
@@ -303,7 +306,7 @@
 
 .trackTitle {
   margin: 0;
-  font-family: var(--dream-font-display);
+  font-family: var(--room-font-heading, var(--dream-font-display));
   font-size: 1.2rem;
   font-weight: 700;
   overflow-wrap: anywhere;
@@ -412,6 +415,36 @@ a.link:focus-visible {
   outline-offset: 2px;
 }
 
+/* ---- Text and image widgets ---- */
+
+.text p {
+  margin: 0 0 var(--space-md);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+}
+
+.text p:last-child {
+  margin-bottom: 0;
+}
+
+.imageFigure {
+  margin: 0;
+  padding: var(--space-sm) var(--space-sm) 0;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--room-secondary) 50%, transparent);
+}
+
+.imageFigure img,
+.imageFigure [role="img"] {
+  border-radius: 10px;
+}
+
+.imageFigure:not(:has(figcaption)) {
+  padding-bottom: var(--space-sm);
+}
+
 /* ---- Footer ---- */
 
 .footer {
@@ -430,13 +463,9 @@ a.link:focus-visible {
   opacity: 0.85;
 }
 
-@media (max-width: 767px) {
+@container room (max-width: 640px) {
   .page {
     padding: var(--space-lg) var(--space-sm);
-  }
-
-  .grid {
-    grid-template-columns: minmax(0, 1fr);
   }
 
   .header,

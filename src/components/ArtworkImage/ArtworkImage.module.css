@@ -34,3 +34,11 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
+
+.natural {
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  object-fit: contain;
+  background: color-mix(in srgb, var(--room-bg) 30%, transparent);
+}
