@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import exampleRoom from "../../data/example-room.json";
 import type { RoomConfig } from "../../types/room";
@@ -128,5 +128,72 @@ describe("ClassicWeb", () => {
     expect(
       within(linksSection).getByText(/No links yet/i),
     ).toBeInTheDocument();
+  });
+});
+
+describe("ClassicWeb — Milestone 2 additions", () => {
+  it("applies the background pattern, defaulting to stars", () => {
+    const { rerender } = render(<ClassicWeb room={baseRoom} />);
+    const page = screen.getByTestId("classic-web-page");
+    expect(page).toHaveAttribute("data-pattern", "stars");
+
+    rerender(
+      <ClassicWeb
+        room={{
+          ...baseRoom,
+          theme: { ...baseRoom.theme, backgroundPattern: "grid" },
+        }}
+      />,
+    );
+    expect(page).toHaveAttribute("data-pattern", "grid");
+
+    const { backgroundPattern: _unused, ...milestoneOneTheme } = baseRoom.theme;
+    void _unused;
+    rerender(<ClassicWeb room={{ ...baseRoom, theme: milestoneOneTheme }} />);
+    expect(page).toHaveAttribute("data-pattern", "stars");
+  });
+
+  it("exposes theme colours as CSS variables", () => {
+    renderRoom();
+    const page = screen.getByTestId("classic-web-page");
+    expect(page.style.getPropertyValue("--room-bg")).toBe(
+      baseRoom.theme.backgroundColor,
+    );
+  });
+
+  it("renders unsafe link URLs as plain text, not links", () => {
+    renderRoom({
+      links: [{ id: "bad", label: "Sneaky", url: "javascript:alert(1)" }],
+    });
+    expect(screen.queryByRole("link", { name: "Sneaky" })).not.toBeInTheDocument();
+    expect(screen.getByText("Sneaky")).toBeInTheDocument();
+  });
+
+  it("shows a fallback for disallowed image URLs", () => {
+    renderRoom({
+      artwork: [
+        { id: "a", title: "Bad", alt: "a cat", imageUrl: "data:image/png;base64,AA" },
+      ],
+    });
+    expect(
+      screen.getByRole("img", { name: "Image unavailable: a cat" }),
+    ).toBeInTheDocument();
+    expect(document.querySelector("img[src^='data:']")).toBeNull();
+  });
+
+  it("shows a fallback when an image fails to load", () => {
+    renderRoom();
+    const img = screen.getByRole("img", { name: baseRoom.artwork[0].alt });
+    fireEvent.error(img);
+    expect(
+      screen.getByRole("img", {
+        name: `Image unavailable: ${baseRoom.artwork[0].alt}`,
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("skips links that don't have a label yet", () => {
+    renderRoom({ links: [{ id: "blank", label: "  ", url: "https://a.com" }] });
+    expect(screen.getByText(/No links yet/i)).toBeInTheDocument();
   });
 });

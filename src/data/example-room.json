@@ -13,7 +13,8 @@
     "primaryColor": "#D8DCF1",
     "secondaryColor": "#A6B5E7",
     "accentColor": "#FFDF68",
-    "textColor": "#202039"
+    "textColor": "#202039",
+    "backgroundPattern": "stars"
   },
   "widgets": {
     "about": true,
