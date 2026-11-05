@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { ClassicWeb } from "../templates/ClassicWeb/ClassicWeb";
+import { RoomRenderer } from "../templates/RoomRenderer";
 import type { RoomConfig } from "../types/room";
 import styles from "./RoomEditor.module.css";
 
@@ -10,8 +10,8 @@ export interface PreviewModeProps {
 }
 
 /**
- * Shows the room exactly as visitors would see it, using the same
- * ClassicWeb renderer as the editor's live preview.
+ * Shows the draft room exactly as visitors would see it, using the same
+ * RoomRenderer as the editor's live preview.
  */
 export function PreviewMode({ room, isDirty, onExit }: PreviewModeProps) {
   const backButton = useRef<HTMLButtonElement>(null);
@@ -43,7 +43,7 @@ export function PreviewMode({ room, isDirty, onExit }: PreviewModeProps) {
           <span aria-hidden="true">← </span>Back to editing
         </button>
       </aside>
-      <ClassicWeb room={room} />
+      <RoomRenderer room={room} />
     </>
   );
 }

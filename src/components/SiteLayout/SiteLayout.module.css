@@ -1,0 +1,40 @@
+.site {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--room-bg);
+  /* Pixel starfield, matching the Classic Web room. */
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255, 223, 104, 0.18) 1px, transparent 0),
+    radial-gradient(circle, rgba(255, 255, 255, 0.55) 1.5px, transparent 2px);
+  background-size:
+    18px 18px,
+    97px 89px;
+  background-position:
+    0 0,
+    23px 41px;
+  color: var(--room-text);
+}
+
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+  min-width: 0;
+}
+
+.main:focus {
+  outline: none;
+}
+
+@media (max-width: 767px) {
+  .main {
+    padding: var(--space-lg) var(--space-sm);
+    gap: var(--space-lg);
+  }
+}

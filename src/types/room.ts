@@ -1,4 +1,12 @@
-export type TemplateId = "classic-web";
+/**
+ * Every template id the app understands. The template registry
+ * (src/templates/templateRegistry.ts) must provide an entry for each one —
+ * TypeScript enforces this. The list lives here, rather than in the
+ * registry, so validation can check ids without importing React components.
+ */
+export const TEMPLATE_IDS = ["classic-web", "cyber-room", "dream-room"] as const;
+
+export type TemplateId = (typeof TEMPLATE_IDS)[number];
 
 export type BackgroundPattern = "plain" | "stars" | "checkerboard" | "grid";
 

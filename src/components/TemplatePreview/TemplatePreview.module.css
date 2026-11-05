@@ -1,0 +1,27 @@
+.frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 11;
+  overflow: hidden;
+  border-bottom: 2px solid var(--border-dark);
+  background: var(--room-bg);
+  pointer-events: none;
+  user-select: none;
+}
+
+.inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+}
+
+/* Templates use 100vh as a minimum; keep miniatures to a sensible size. */
+.inner > * {
+  min-height: 0 !important;
+}
+
+/* Freeze decorative animation inside miniatures. */
+.inner * {
+  animation: none !important;
+}

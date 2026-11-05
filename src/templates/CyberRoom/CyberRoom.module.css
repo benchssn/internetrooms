@@ -1,0 +1,437 @@
+/*
+ * Cyber Room: dark HUD panels, chrome borders, electric glow.
+ * All colours come from the room theme variables (--room-*).
+ */
+.page {
+  --cyber-font-display: "Eurostile", "Microgramma", "Bank Gothic", "Arial Black",
+    "Trebuchet MS", sans-serif;
+  --cyber-font-mono: "Lucida Console", "Courier New", Courier, monospace;
+  --chrome: linear-gradient(
+    135deg,
+    #f4f6ff 0%,
+    #8a90ad 22%,
+    #e8ebff 45%,
+    #5c6180 68%,
+    #d8dcf5 100%
+  );
+  --glow: color-mix(in srgb, var(--room-accent) 40%, transparent);
+
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background-color: var(--room-bg);
+  color: var(--room-text);
+  padding: var(--space-lg) var(--space-md);
+  font-family: var(--font-body);
+}
+
+/* ---- Background patterns ---- */
+
+.page[data-pattern="plain"] {
+  background-image: radial-gradient(
+    ellipse at 50% -10%,
+    color-mix(in srgb, var(--room-secondary) 35%, transparent),
+    transparent 60%
+  );
+}
+
+.page[data-pattern="stars"] {
+  background-image:
+    radial-gradient(circle, color-mix(in srgb, var(--room-accent) 70%, transparent) 1px, transparent 1.5px),
+    radial-gradient(circle, color-mix(in srgb, var(--room-secondary) 80%, transparent) 1px, transparent 1.5px),
+    radial-gradient(ellipse at 50% -10%, color-mix(in srgb, var(--room-secondary) 30%, transparent), transparent 60%);
+  background-size:
+    61px 53px,
+    89px 97px,
+    100% 100%;
+  background-position:
+    0 0,
+    31px 17px,
+    0 0;
+}
+
+.page[data-pattern="checkerboard"] {
+  background-image: conic-gradient(
+    rgba(255, 255, 255, 0.05) 0 25%,
+    rgba(0, 0, 0, 0.25) 0 50%,
+    rgba(255, 255, 255, 0.05) 0 75%,
+    rgba(0, 0, 0, 0.25) 0
+  );
+  background-size: 28px 28px;
+}
+
+.page[data-pattern="grid"] {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--room-accent) 22%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--room-accent) 22%, transparent) 1px, transparent 1px),
+    linear-gradient(180deg, transparent 55%, color-mix(in srgb, var(--room-secondary) 35%, transparent));
+  background-size:
+    32px 32px,
+    32px 32px,
+    100% 100%;
+}
+
+.scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0 2px,
+    rgba(0, 0, 0, 0.16) 2px 3px
+  );
+}
+
+.shell {
+  position: relative;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* ---- Chrome-framed surfaces ---- */
+
+.hud,
+.panel,
+.footer {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--room-primary), var(--room-primary)) padding-box,
+    var(--chrome) border-box;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 0 18px var(--glow);
+}
+
+.hud {
+  padding: var(--space-md) var(--space-lg) var(--space-lg);
+}
+
+.hudRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.brand,
+.signal {
+  margin: 0;
+  font-family: var(--cyber-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.signal {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--room-accent);
+}
+
+.signalDot {
+  width: 8px;
+  height: 8px;
+  background: var(--room-accent);
+  box-shadow: 0 0 8px var(--room-accent);
+}
+
+.title {
+  margin: 0 0 var(--space-sm);
+  font-family: var(--cyber-font-display);
+  font-size: clamp(1.5rem, 5vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+  text-shadow: 0 0 14px var(--glow);
+}
+
+.tagline {
+  margin: 0;
+  font-family: var(--cyber-font-mono);
+  color: var(--room-accent);
+  overflow-wrap: anywhere;
+}
+
+.hudTicks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+  font-family: var(--cyber-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+/* ---- Panels ---- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+.panel {
+  min-width: 0;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.panelBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-md);
+  background: linear-gradient(
+    90deg,
+    var(--room-secondary),
+    color-mix(in srgb, var(--room-secondary) 20%, transparent)
+  );
+  border-bottom: 1px solid color-mix(in srgb, var(--room-accent) 50%, transparent);
+}
+
+.panelTitle {
+  margin: 0;
+  font-family: var(--cyber-font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--room-text);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.panelArrow {
+  color: var(--room-accent);
+}
+
+.panelCode {
+  font-family: var(--cyber-font-mono);
+  font-size: 0.7rem;
+  opacity: 0.75;
+}
+
+.panelBody {
+  padding: var(--space-md);
+  min-width: 0;
+}
+
+.ownerName {
+  margin: 0 0 var(--space-sm);
+  font-family: var(--cyber-font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+  color: var(--room-accent);
+}
+
+.bio {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.empty {
+  margin: 0;
+  font-family: var(--cyber-font-mono);
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.empty::before {
+  content: "> ";
+  color: var(--room-accent);
+}
+
+/* ---- Music deck ---- */
+
+.deck {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.nowPlaying {
+  margin: 0;
+  font-family: var(--cyber-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--room-accent);
+}
+
+.trackTitle {
+  margin: 0;
+  font-family: var(--cyber-font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+}
+
+.artist {
+  margin: 0;
+  font-family: var(--cyber-font-mono);
+  overflow-wrap: anywhere;
+}
+
+.eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 32px;
+  margin: var(--space-sm) 0;
+}
+
+.eqBar {
+  flex: 1;
+  max-width: 10px;
+  height: 100%;
+  background: linear-gradient(0deg, var(--room-secondary), var(--room-accent));
+  transform-origin: bottom;
+  /* A static, sine-shaped skyline when motion is reduced. */
+  transform: scaleY(calc(0.6 + 0.35 * sin(var(--i) * 0.9rad)));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .eqBar {
+    animation: eqPulse 2.4s ease-in-out infinite alternate;
+    animation-delay: calc(var(--i) * -0.27s);
+  }
+}
+
+@keyframes eqPulse {
+  from {
+    transform: scaleY(0.25);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.musicDesc {
+  margin: 0;
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
+/* ---- Gallery ---- */
+
+.gallery {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-md);
+}
+
+.galleryItem {
+  min-width: 0;
+}
+
+.figure {
+  margin: 0;
+  border: 1px solid color-mix(in srgb, var(--room-accent) 60%, transparent);
+  background: var(--room-bg);
+  transition:
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.figure:hover {
+  box-shadow: 0 0 14px var(--glow);
+  transform: translateY(-2px);
+}
+
+.caption {
+  padding: var(--space-xs) var(--space-sm);
+  font-family: var(--cyber-font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+/* ---- Links ---- */
+
+.linkList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: var(--space-sm);
+}
+
+.link {
+  display: block;
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--cyber-font-mono);
+  font-weight: 700;
+  color: var(--room-accent);
+  border: 1px solid color-mix(in srgb, var(--room-accent) 45%, transparent);
+  overflow-wrap: anywhere;
+}
+
+a.link::before {
+  content: "→ ";
+}
+
+a.link:visited {
+  color: var(--room-accent);
+}
+
+a.link:hover {
+  background: var(--room-accent);
+  color: var(--room-bg);
+}
+
+a.link:focus-visible {
+  outline: 3px solid var(--room-accent);
+  outline-offset: 2px;
+}
+
+/* ---- Footer ---- */
+
+.footer {
+  padding: var(--space-md);
+  text-align: center;
+}
+
+.footer p {
+  margin: 0 0 var(--space-xs);
+  overflow-wrap: anywhere;
+}
+
+.attribution {
+  font-family: var(--cyber-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+@media (max-width: 767px) {
+  .page {
+    padding: var(--space-md) var(--space-sm);
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hud {
+    padding: var(--space-md);
+  }
+}

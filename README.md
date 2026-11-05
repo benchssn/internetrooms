@@ -1,6 +1,65 @@
 # Internetrooms
 
-Internetrooms is an experimental creative web platform inspired by early personal websites. Milestone 1 delivered one Classic Web room template — a nostalgic, responsive personal page driven by local JSON configuration. Milestone 2 adds a visual editor so anyone can personalise that room without touching code.
+Internetrooms is an experimental creative web platform inspired by early personal websites. Milestone 1 delivered one Classic Web room template — a nostalgic, responsive personal page driven by local JSON configuration. Milestone 2 adds a visual editor so anyone can personalise that room without touching code. Milestone 3 turns it into a small multi-page site with a homepage, a template library (Classic Web, Cyber Room, Dream Room) and a separate saved-room viewer.
+
+## Routes (Milestone 3)
+
+| Route | What it shows |
+| --- | --- |
+| `/` | The Internetrooms homepage |
+| `/templates` | The template library — pick Classic Web, Cyber Room or Dream Room |
+| `/edit` | The visual room editor (with live preview and Preview mode) |
+| `/room` | Your most recently **saved** room, as a visitor would see it |
+| anything else | A friendly 404 page |
+
+Routing uses [React Router](https://reactrouter.com/) with real URLs, so back/forward, bookmarks and refreshes all work. Unsaved editor changes are kept in memory while you move between pages (they're lost only if you close or reload the tab — the browser warns you first).
+
+### Hosting the production build
+
+Every route is served by the same `index.html`, so the host must fall back to it for unknown paths. `npm run dev` and `npm run preview` already do this. For production, the build includes:
+
+- `public/_redirects` → copied to `dist/_redirects` (Netlify, Cloudflare Pages)
+- `vercel.json` (Vercel)
+- `dist/404.html`, a copy of `index.html` created after each build (GitHub Pages and similar static hosts; deep links work, though the first response carries a 404 status)
+
+The app assumes it is served from the domain root. If you host it under a sub-path (e.g. `username.github.io/internetrooms/`), set `base` in `vite.config.ts` — the router picks it up automatically — but bundled asset paths in room data such as `/assets/images/…` would also need updating.
+
+## Templates (Milestone 3)
+
+| Template | Mood |
+| --- | --- |
+| **Classic Web** | Colourful panels, chunky retro windows, pixel stars — the early personal web |
+| **Cyber Room** | Dark chrome-framed HUD panels, electric blue and violet glow, a now-playing equaliser |
+| **Dream Room** | Lavender and pastel gradients, rounded translucent cards, drifting clouds and petals |
+
+All three read the **same `RoomConfig`**, render the same widgets (About Me, Art Gallery, Music, Favourite Links), respect widget visibility, use the five theme colours and the four background patterns (each interpreted in the template's own style), handle empty content, and are responsive. Decorative motion (Cyber's equaliser, Dream's drifting shapes) stops when the visitor prefers reduced motion.
+
+**Switching templates** (from `/templates`) changes only the draft: it sets `template`, applies that template's default colours and pattern, keeps every piece of content and every widget toggle, then opens `/edit`. Nothing is written to storage until you press **Save**. Choosing the template you're already using simply opens the editor and keeps your custom colours. In the editor, "Restore … colours" restores the current template's defaults.
+
+### How templates fit together
+
+```text
+src/templates/
+├── templateRegistry.ts   # single source of truth: id, name, tagline, description, default theme, component
+├── RoomRenderer.tsx      # resolves room.template via the registry (unknown ids fall back to Classic Web)
+├── applyTemplate.ts      # pure "switch template, keep content" function
+├── shared/               # theme CSS variables, visible-link filter, SafeLink, shared widget headings
+├── ClassicWeb/
+├── CyberRoom/
+└── DreamRoom/
+```
+
+`RoomRenderer` is used by the editor's live preview, Preview mode, `/room`, and the miniature previews on the homepage and `/templates` — there is no other rendering path.
+
+**Adding a template:** add its id to `TEMPLATE_IDS` in `src/types/room.ts` (TypeScript will then insist on a registry entry), create a component that accepts `TemplateProps`, and register it with a default theme. The editor, validation, template library and renderer pick it up automatically.
+
+### Schema
+
+`TemplateId` is now `"classic-web" | "cyber-room" | "dream-room"`. This is an additive change, so `schemaVersion` stays `1` and Milestone 1 and 2 rooms load unchanged.
+
+### `/room` is private to your browser
+
+The saved room lives in this browser's `localStorage`. `/room` is **not** a public, shareable profile — someone else opening `/room` sees their own saved room (or an empty state), never yours. Public publishing needs a backend and is planned for a later milestone.
 
 ## Milestone 1 includes
 
@@ -15,12 +74,13 @@ Internetrooms is an experimental creative web platform inspired by early persona
 
 ## Milestone 2 — Visual Room Editor
 
-Open the app and you land in the editor: customisation controls on the left, a live preview of your Classic Web room on the right (stacked on screens narrower than 1024px).
+Open `/edit` (or choose **Edit your room** on the homepage) for the editor: customisation controls on the left, a live preview of your Classic Web room on the right (stacked on screens narrower than 1024px).
 
 **What you can change**
 
 | Section | What it does |
 | --- | --- |
+| Template | Shows the current template, with a link to the template library |
 | Room identity | Room title and tagline, with character counts |
 | Theme colours | Background, primary, secondary, accent and text colours — native colour picker plus an editable hex value. Invalid hex values are never applied. "Restore template colours" brings back the originals. A gentle warning appears if text/panel contrast drops below 4.5:1 |
 | Background | Plain, Pixel stars, Checkerboard or Retro grid (all CSS-generated) |
@@ -48,7 +108,8 @@ Open the app and you land in the editor: customisation controls on the left, a l
 
 ```text
 src/
-├── App.tsx                  # switches between editor and preview mode
+├── App.tsx                  # router + routes; shares one room draft across pages
+├── pages/                   # HomePage, TemplatesPage, EditPage (editor ↔ preview mode), RoomPage, NotFoundPage
 ├── hooks/useRoomDraft.ts    # savedRoom + draftRoom, dirty state, save/reset, beforeunload
 ├── storage/roomStorage.ts   # localStorage load/save/clear with read-back confirmation
 ├── validation/roomValidation.ts  # limits, URL/colour checks, runtime schema validation
@@ -61,7 +122,8 @@ src/
 │   ├── editorUtils.ts       # ids, list helpers, contrast, focus helper
 │   └── sections/            # one component per editor section
 ├── components/ArtworkImage/ # image with safe-URL check and error fallback
-└── templates/ClassicWeb/    # unchanged visitor-facing renderer (+ patterns)
+├── components/SiteHeader, SiteFooter, SiteLayout, TemplatePreview
+└── templates/               # see "How templates fit together" above
 ```
 
 ### Schema change
@@ -134,17 +196,11 @@ The Classic Web template reads that configuration and renders the page. No backe
 
 Artwork files referenced by `imageUrl` should live under `public/` (for example `public/assets/images/`).
 
-## Adding a new visual template later
-
-1. Add a new template id to `TemplateId` in `src/types/room.ts`.
-2. Create a template component under `src/templates/`.
-3. Point `App.tsx` (or a future template switch) at the new component based on `room.template`.
-
-Keep templates presentational and pass room data in as props.
-
 ## Known limitations
 
-- Only the Classic Web template is implemented.
+- `/room` is local to your browser and is not a public page; there is no publishing or sharing yet.
+- Switching templates replaces your custom colours with the new template's defaults (your content is kept, and nothing is saved until you press Save).
+- Template typography uses system font stacks (no web fonts), so headings look slightly different across operating systems.
 - Rooms are saved only in this browser's `localStorage`. Clearing site data, private browsing, or a different browser/device means a different (or empty) save. There is no export/import yet.
 - Only one room (`room-001`) is supported.
 - Remote artwork images are loaded directly from their host, which can see a visitor's IP address. That's fine for a local prototype but must be revisited before any public publishing (e.g. proxying or uploading images).

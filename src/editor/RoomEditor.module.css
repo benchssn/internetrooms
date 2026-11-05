@@ -858,3 +858,73 @@
 .previewBarDirty {
   font-weight: 400;
 }
+
+/* ------------------------------------------------------------------ */
+/* Milestone 3: site navigation and template section                   */
+/* ------------------------------------------------------------------ */
+
+.brandLink {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.app .brandLink,
+.app .brandLink:visited {
+  color: #ffffff;
+}
+
+.app .brandLink:hover .brandName {
+  text-decoration: underline;
+}
+
+.siteNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+}
+
+.app .siteNav a,
+.app .siteNav a:visited {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--ed-touch);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.templateCurrent {
+  margin: 0;
+}
+
+.templateLabel {
+  color: var(--ed-muted);
+}
+
+.linkButton {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  min-height: var(--ed-touch);
+  padding: 0 var(--space-md);
+  font-weight: 700;
+  text-decoration: none;
+  background: var(--ed-panel);
+  border: 2px solid var(--ed-border);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.7),
+    2px 2px 0 var(--ed-border);
+}
+
+.app .linkButton,
+.app .linkButton:visited {
+  color: var(--ed-ink);
+}
+
+.app .linkButton:hover {
+  background: var(--ed-accent-soft);
+}

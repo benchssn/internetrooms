@@ -23,9 +23,9 @@ export const COLOUR_LABELS: Record<ThemeColourKey, string> = {
 
 export const COLOUR_HINTS: Record<ThemeColourKey, string> = {
   backgroundColor: "Behind everything",
-  primaryColor: "Window and header panels",
-  secondaryColor: "Title bars and frames",
-  accentColor: "Highlights and title-bar glow",
+  primaryColor: "Panels and cards",
+  secondaryColor: "Title bars, frames and soft tints",
+  accentColor: "Highlights and glow",
   textColor: "All room text",
 };
 
