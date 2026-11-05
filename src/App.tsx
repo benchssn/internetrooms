@@ -1,6 +1,12 @@
 import { lazy, Suspense, useEffect, useRef } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router";
+import { AuthProvider } from "./auth/AuthProvider";
 import { RoomDraftProvider } from "./hooks/RoomDraftProvider";
+import { AuthCallbackPage } from "./pages/auth/AuthCallbackPage";
+import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage";
+import { LoginPage } from "./pages/auth/LoginPage";
+import { RegisterPage } from "./pages/auth/RegisterPage";
+import { ResetPasswordPage } from "./pages/auth/ResetPasswordPage";
 import { EditPage } from "./pages/EditPage";
 import { HomePage } from "./pages/HomePage";
 import { NotFoundPage } from "./pages/NotFoundPage";
@@ -45,6 +51,11 @@ export function AppRoutes() {
       <Route path="/templates" element={<TemplatesPage />} />
       <Route path="/edit" element={<EditPage />} />
       <Route path="/room" element={<RoomPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route
         path="/supabase-test"
         element={
@@ -61,10 +72,12 @@ export function AppRoutes() {
 export default function App() {
   return (
     <BrowserRouter basename={BASENAME}>
-      <RoomDraftProvider>
-        <RouteFocus />
-        <AppRoutes />
-      </RoomDraftProvider>
+      <AuthProvider>
+        <RoomDraftProvider>
+          <RouteFocus />
+          <AppRoutes />
+        </RoomDraftProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

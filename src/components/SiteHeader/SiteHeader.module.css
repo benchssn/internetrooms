@@ -47,6 +47,7 @@
 
 .nav {
   min-width: 0;
+  margin-left: auto;
 }
 
 .navList {
@@ -104,6 +105,10 @@
   .nav,
   .navList {
     width: 100%;
+  }
+
+  .nav {
+    margin-left: 0;
   }
 
   .navList {

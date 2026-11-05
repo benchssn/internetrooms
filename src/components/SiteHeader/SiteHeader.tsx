@@ -1,4 +1,5 @@
 import { Link, NavLink } from "react-router";
+import { AccountNav } from "../AccountNav/AccountNav";
 import styles from "./SiteHeader.module.css";
 
 const NAV_ITEMS = [
@@ -35,6 +36,7 @@ export function SiteHeader() {
             ))}
           </ul>
         </nav>
+        <AccountNav />
       </div>
     </header>
   );

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router";
+import { AccountNav } from "../components/AccountNav/AccountNav";
 import type { RoomDraft } from "../hooks/useRoomDraft";
 import { readRawRoom } from "../storage/roomStorage";
 import { RoomRenderer } from "../templates/RoomRenderer";
@@ -212,6 +213,7 @@ export function RoomEditor({ draft, onPreview, initialMessage }: RoomEditorProps
           <Link to="/templates">Templates</Link>
           <Link to="/room">My room</Link>
         </nav>
+        <AccountNav tone="toolbar" />
 
         <p
           className={`${styles.saveState} ${isDirty ? styles.saveStateDirty : styles.saveStateClean}`}
