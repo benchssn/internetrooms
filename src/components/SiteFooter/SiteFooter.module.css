@@ -1,32 +1,31 @@
 .footer {
   margin-top: auto;
-  background: #141c4a;
-  color: #e4e8ff;
-  border-top: 2px solid var(--border-dark);
+  border-top: 1px solid #111111;
+  background: #ffffff;
+  color: #111111;
 }
 
 .inner {
-  max-width: var(--content-max);
+  max-width: 1200px;
   margin: 0 auto;
-  padding: var(--space-lg) var(--space-md);
+  padding: 2rem clamp(1rem, 4vw, 2.5rem);
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-sm);
-  text-align: center;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem 2rem;
 }
 
 .motto {
   margin: 0;
-  font-family: var(--font-heading);
   font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .links {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-xs) var(--space-md);
+  gap: 0 1.25rem;
 }
 
 .links a,
@@ -34,14 +33,19 @@
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  color: #ffdf68;
-  font-family: var(--font-system);
-  font-weight: 700;
+  color: #111111;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.links a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .note {
   margin: 0;
-  font-family: var(--font-system);
-  font-size: 0.8rem;
-  opacity: 0.85;
+  flex-basis: 100%;
+  font-size: 0.85rem;
+  color: #555555;
 }

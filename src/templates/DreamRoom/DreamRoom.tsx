@@ -1,43 +1,70 @@
-import type { ReactNode } from "react";
 import { useId } from "react";
-import { ArtworkImage } from "../../components/ArtworkImage/ArtworkImage";
-import {
-  patternOf,
-  themeStyle,
-  visibleLinks,
-  WIDGET_HEADINGS,
-  type TemplateProps,
-} from "../shared/roomContent";
-import { SafeLink } from "../shared/SafeLink";
+import { DecorationSlot } from "../shared/Decorations";
+import { roomPageProps } from "../shared/pageProps";
+import type { TemplateProps } from "../shared/roomContent";
+import { RoomWidgets, type WidgetFrameProps, type WidgetSkin } from "../shared/RoomWidgets";
 import styles from "./DreamRoom.module.css";
 
-function Card({
-  title,
-  icon,
-  wide,
-  children,
-}: {
-  title: string;
-  icon: string;
-  wide?: boolean;
-  children: ReactNode;
-}) {
+const ICONS = {
+  about: "☾",
+  gallery: "✿",
+  music: "♪",
+  links: "✦",
+  text: "✎",
+  image: "❀",
+  "link-collection": "✧",
+} as const;
+
+function DreamFrame({ widget, title, label, children }: WidgetFrameProps) {
   const headingId = useId();
   return (
     <section
-      className={wide ? `${styles.card} ${styles.wide}` : styles.card}
-      aria-labelledby={headingId}
+      className={styles.card}
+      aria-labelledby={title !== null ? headingId : undefined}
+      aria-label={title === null ? label : undefined}
     >
-      <h2 id={headingId} className={styles.cardTitle}>
-        <span aria-hidden="true" className={styles.cardIcon}>
-          {icon}
-        </span>
-        {title}
-      </h2>
+      {title !== null ? (
+        <h2 id={headingId} className={styles.cardTitle}>
+          <span aria-hidden="true" className={styles.cardIcon}>
+            {ICONS[widget.type]}
+          </span>
+          {title}
+        </h2>
+      ) : null}
       {children}
     </section>
   );
 }
+
+const skin: WidgetSkin = {
+  Frame: DreamFrame,
+  classes: {
+    ownerName: styles.ownerName,
+    bio: styles.bio,
+    empty: styles.empty,
+    gallery: styles.gallery,
+    galleryItem: styles.galleryItem,
+    figure: styles.figure,
+    caption: styles.caption,
+    music: styles.music,
+    trackTitle: styles.trackTitle,
+    artist: styles.artist,
+    musicDesc: styles.musicDesc,
+    linkList: styles.linkList,
+    link: styles.link,
+    text: styles.text,
+    imageFigure: styles.imageFigure,
+    imageCaption: styles.caption,
+  },
+  empty: {
+    about: "a quiet space, waiting for words.",
+    gallery: "the gallery is resting. new art will bloom soon.",
+    music: "nothing playing — just the hum of the breeze.",
+    links: "no paths to wander yet.",
+    text: "a blank page, waiting for words.",
+    "link-collection": "no paths to wander yet.",
+  },
+};
 
 /** Decorative drifting shapes: clouds, sparkles, petals, a moon. */
 const FLOATERS = [
@@ -50,17 +77,9 @@ const FLOATERS = [
   { glyph: "☾", className: "moon" },
 ] as const;
 
-export function DreamRoom({ room }: TemplateProps) {
-  const links = visibleLinks(room);
-
+export function DreamRoom({ room, backgroundImageUrl }: TemplateProps) {
   return (
-    <div
-      className={styles.page}
-      style={themeStyle(room)}
-      data-pattern={patternOf(room)}
-      data-template="dream-room"
-      data-testid="room-page"
-    >
+    <div {...roomPageProps(room, backgroundImageUrl, styles.page, "dream-room")}>
       <div className={styles.floaters} aria-hidden="true">
         {FLOATERS.map((f) => (
           <span key={f.className} className={`${styles.floater} ${styles[f.className]}`}>
@@ -75,88 +94,25 @@ export function DreamRoom({ room }: TemplateProps) {
             <span aria-hidden="true">✧ </span>Internetrooms
             <span aria-hidden="true"> ✧</span>
           </p>
-          <h1 className={styles.title}>{room.title}</h1>
+          <div className={styles.titleRow}>
+            <DecorationSlot room={room} slot="header-start" />
+            <h1 className={styles.title}>{room.title}</h1>
+            <DecorationSlot room={room} slot="header-end" />
+          </div>
           {room.tagline ? <p className={styles.tagline}>{room.tagline}</p> : null}
           <p className={styles.divider} aria-hidden="true">
             ~ ✿ ~
           </p>
         </header>
 
-        <main className={styles.grid}>
-          {room.widgets.about ? (
-            <Card title={WIDGET_HEADINGS.about} icon="☾">
-              <p className={styles.ownerName}>{room.owner.displayName}</p>
-              {room.owner.bio ? (
-                <p className={styles.bio}>{room.owner.bio}</p>
-              ) : (
-                <p className={styles.empty}>a quiet space, waiting for words.</p>
-              )}
-            </Card>
-          ) : null}
-
-          {room.widgets.music ? (
-            <Card title={WIDGET_HEADINGS.music} icon="♪">
-              {room.music === null ? (
-                <p className={styles.empty}>
-                  nothing playing — just the hum of the breeze.
-                </p>
-              ) : (
-                <div className={styles.music}>
-                  <p className={styles.trackTitle}>{room.music.title}</p>
-                  <p className={styles.artist}>by {room.music.artist}</p>
-                  {room.music.description ? (
-                    <p className={styles.musicDesc}>{room.music.description}</p>
-                  ) : null}
-                </div>
-              )}
-            </Card>
-          ) : null}
-
-          {room.widgets.gallery ? (
-            <Card title={WIDGET_HEADINGS.gallery} icon="✿" wide>
-              {room.artwork.length === 0 ? (
-                <p className={styles.empty}>
-                  the gallery is resting. new art will bloom soon.
-                </p>
-              ) : (
-                <ul className={styles.gallery}>
-                  {room.artwork.map((art) => (
-                    <li key={art.id} className={styles.galleryItem}>
-                      <figure className={styles.figure}>
-                        <ArtworkImage src={art.imageUrl} alt={art.alt} />
-                        <figcaption className={styles.caption}>
-                          {art.title}
-                        </figcaption>
-                      </figure>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Card>
-          ) : null}
-
-          {room.widgets.links ? (
-            <Card title={WIDGET_HEADINGS.links} icon="✦" wide>
-              {links.length === 0 ? (
-                <p className={styles.empty}>no paths to wander yet.</p>
-              ) : (
-                <ul className={styles.linkList}>
-                  {links.map((link) => (
-                    <li key={link.id}>
-                      <SafeLink link={link} className={styles.link} />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Card>
-          ) : null}
-        </main>
+        <DecorationSlot room={room} slot="below-header" />
+        <RoomWidgets room={room} skin={skin} className={styles.grid} />
+        <DecorationSlot room={room} slot="below-widgets" />
 
         <footer className={styles.footer}>
           <p>thank you for drifting by ☁</p>
-          <p className={styles.attribution}>
-            made with Internetrooms · Dream Room template
-          </p>
+          <DecorationSlot room={room} slot="footer" />
+          <p className={styles.attribution}>made with Internetrooms · Dream Room template</p>
         </footer>
       </div>
     </div>

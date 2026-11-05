@@ -1,40 +1,32 @@
-import type { ReactNode } from "react";
 import { useId } from "react";
-import { ArtworkImage } from "../../components/ArtworkImage/ArtworkImage";
-import {
-  patternOf,
-  themeStyle,
-  visibleLinks,
-  WIDGET_HEADINGS,
-  type TemplateProps,
-} from "../shared/roomContent";
-import { SafeLink } from "../shared/SafeLink";
+import { DecorationSlot } from "../shared/Decorations";
+import { roomPageProps } from "../shared/pageProps";
+import type { TemplateProps } from "../shared/roomContent";
+import { RoomWidgets, type WidgetFrameProps, type WidgetSkin } from "../shared/RoomWidgets";
 import styles from "./CyberRoom.module.css";
 
-function Panel({
-  title,
-  code,
-  wide,
-  children,
-}: {
-  title: string;
-  code: string;
-  wide?: boolean;
-  children: ReactNode;
-}) {
+function CyberFrame({ title, label, index, children }: WidgetFrameProps) {
   const headingId = useId();
+  const code = String(index).padStart(2, "0");
   return (
     <section
-      className={wide ? `${styles.panel} ${styles.wide}` : styles.panel}
-      aria-labelledby={headingId}
+      className={styles.panel}
+      aria-labelledby={title !== null ? headingId : undefined}
+      aria-label={title === null ? label : undefined}
     >
       <div className={styles.panelBar}>
-        <h2 id={headingId} className={styles.panelTitle}>
+        {title !== null ? (
+          <h2 id={headingId} className={styles.panelTitle}>
+            <span aria-hidden="true" className={styles.panelArrow}>
+              ▸{" "}
+            </span>
+            {title}
+          </h2>
+        ) : (
           <span aria-hidden="true" className={styles.panelArrow}>
-            ▸{" "}
+            ▸ img
           </span>
-          {title}
-        </h2>
+        )}
         <span aria-hidden="true" className={styles.panelCode}>
           {code}
         </span>
@@ -46,17 +38,46 @@ function Panel({
 
 const EQ_BARS = 12;
 
-export function CyberRoom({ room }: TemplateProps) {
-  const links = visibleLinks(room);
+const skin: WidgetSkin = {
+  Frame: CyberFrame,
+  classes: {
+    ownerName: styles.ownerName,
+    bio: styles.bio,
+    empty: styles.empty,
+    gallery: styles.gallery,
+    galleryItem: styles.galleryItem,
+    figure: styles.figure,
+    caption: styles.caption,
+    music: styles.deck,
+    trackTitle: styles.trackTitle,
+    artist: styles.artist,
+    musicDesc: styles.musicDesc,
+    linkList: styles.linkList,
+    link: styles.link,
+    text: styles.text,
+    imageFigure: styles.imageFigure,
+    imageCaption: styles.caption,
+  },
+  empty: {
+    about: "no bio uploaded yet.",
+    gallery: "gallery buffer empty. more art incoming.",
+    music: "deck is idle. nothing queued right now.",
+    links: "no links logged yet.",
+    text: "no transmission yet.",
+    "link-collection": "no links logged yet.",
+  },
+  musicExtra: (
+    <div className={styles.eq} aria-hidden="true">
+      {Array.from({ length: EQ_BARS }, (_, i) => (
+        <span key={i} className={styles.eqBar} style={{ ["--i" as string]: i }} />
+      ))}
+    </div>
+  ),
+};
 
+export function CyberRoom({ room, backgroundImageUrl }: TemplateProps) {
   return (
-    <div
-      className={styles.page}
-      style={themeStyle(room)}
-      data-pattern={patternOf(room)}
-      data-template="cyber-room"
-      data-testid="room-page"
-    >
+    <div {...roomPageProps(room, backgroundImageUrl, styles.page, "cyber-room")}>
       <div className={styles.scanlines} aria-hidden="true" />
       <div className={styles.shell}>
         <header className={styles.hud}>
@@ -67,7 +88,11 @@ export function CyberRoom({ room }: TemplateProps) {
               link active
             </p>
           </div>
-          <h1 className={styles.title}>{room.title}</h1>
+          <div className={styles.titleRow}>
+            <DecorationSlot room={room} slot="header-start" />
+            <h1 className={styles.title}>{room.title}</h1>
+            <DecorationSlot room={room} slot="header-end" />
+          </div>
           {room.tagline ? <p className={styles.tagline}>{room.tagline}</p> : null}
           <div className={styles.hudTicks} aria-hidden="true">
             <span>sys.ok</span>
@@ -76,93 +101,14 @@ export function CyberRoom({ room }: TemplateProps) {
           </div>
         </header>
 
-        <main className={styles.grid}>
-          {room.widgets.about ? (
-            <Panel title={WIDGET_HEADINGS.about} code="01">
-              <p className={styles.ownerName}>{room.owner.displayName}</p>
-              {room.owner.bio ? (
-                <p className={styles.bio}>{room.owner.bio}</p>
-              ) : (
-                <p className={styles.empty}>no bio uploaded yet.</p>
-              )}
-            </Panel>
-          ) : null}
-
-          {room.widgets.music ? (
-            <Panel title={WIDGET_HEADINGS.music} code="02">
-              {room.music === null ? (
-                <p className={styles.empty}>
-                  deck is idle. nothing queued right now.
-                </p>
-              ) : (
-                <div className={styles.deck}>
-                  <p className={styles.nowPlaying} aria-hidden="true">
-                    now playing
-                  </p>
-                  <p className={styles.trackTitle}>{room.music.title}</p>
-                  <p className={styles.artist}>by {room.music.artist}</p>
-                  <div className={styles.eq} aria-hidden="true">
-                    {Array.from({ length: EQ_BARS }, (_, i) => (
-                      <span
-                        key={i}
-                        className={styles.eqBar}
-                        style={{ ["--i" as string]: i }}
-                      />
-                    ))}
-                  </div>
-                  {room.music.description ? (
-                    <p className={styles.musicDesc}>{room.music.description}</p>
-                  ) : null}
-                </div>
-              )}
-            </Panel>
-          ) : null}
-
-          {room.widgets.gallery ? (
-            <Panel title={WIDGET_HEADINGS.gallery} code="03" wide>
-              {room.artwork.length === 0 ? (
-                <p className={styles.empty}>
-                  gallery buffer empty. more art incoming.
-                </p>
-              ) : (
-                <ul className={styles.gallery}>
-                  {room.artwork.map((art) => (
-                    <li key={art.id} className={styles.galleryItem}>
-                      <figure className={styles.figure}>
-                        <ArtworkImage src={art.imageUrl} alt={art.alt} />
-                        <figcaption className={styles.caption}>
-                          {art.title}
-                        </figcaption>
-                      </figure>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Panel>
-          ) : null}
-
-          {room.widgets.links ? (
-            <Panel title={WIDGET_HEADINGS.links} code="04" wide>
-              {links.length === 0 ? (
-                <p className={styles.empty}>no links logged yet.</p>
-              ) : (
-                <ul className={styles.linkList}>
-                  {links.map((link) => (
-                    <li key={link.id}>
-                      <SafeLink link={link} className={styles.link} />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Panel>
-          ) : null}
-        </main>
+        <DecorationSlot room={room} slot="below-header" />
+        <RoomWidgets room={room} skin={skin} className={styles.grid} />
+        <DecorationSlot room={room} slot="below-widgets" />
 
         <footer className={styles.footer}>
           <p>end of transmission — come back anytime</p>
-          <p className={styles.attribution}>
-            made with Internetrooms · Cyber Room template
-          </p>
+          <DecorationSlot room={room} slot="footer" />
+          <p className={styles.attribution}>made with Internetrooms · Cyber Room template</p>
         </footer>
       </div>
     </div>

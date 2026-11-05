@@ -42,17 +42,15 @@ export function TemplatesPage() {
       <div className={styles.callout} role="note">
         <p>
           <strong>
-            <span aria-hidden="true">⚠ </span>Choosing a new template changes
-            your colours and background pattern.
+            Choosing a new template changes your colours and background.
           </strong>{" "}
-          Your title, biography, art, music, links and widget choices all stay
-          exactly as they are. Nothing is saved until you press{" "}
+          Your writing, images, music, links, widget order and sizes, fonts and
+          decorations all stay exactly as they are. Nothing is saved until you press{" "}
           <strong>Save</strong> in the editor.
         </p>
         {isDirty ? (
           <p>
-            <span aria-hidden="true">● </span>You have unsaved changes — they'll
-            come with you.
+            You have unsaved changes — they'll come with you.
           </p>
         ) : null}
       </div>
@@ -64,7 +62,9 @@ export function TemplatesPage() {
           return (
             <li key={template.id} className={styles.templateCard}>
               <article aria-labelledby={headingId}>
-                <TemplatePreview room={applyTemplate(draftRoom, template.id)} />
+                <div className={styles.previewFrame}>
+                  <TemplatePreview room={applyTemplate(draftRoom, template.id)} />
+                </div>
                 <div className={styles.templateBody}>
                   <div className={styles.templateHeading}>
                     <h2 id={headingId} className={styles.cardTitle}>
@@ -72,7 +72,7 @@ export function TemplatesPage() {
                     </h2>
                     {current ? (
                       <span className={styles.badge}>
-                        <span aria-hidden="true">✓ </span>Current template
+                        Current template
                       </span>
                     ) : null}
                   </div>

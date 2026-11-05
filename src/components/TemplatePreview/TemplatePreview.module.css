@@ -17,7 +17,7 @@
 }
 
 /* Templates use 100vh as a minimum; keep miniatures to a sensible size. */
-.inner > * {
+.inner [data-testid="room-page"] {
   min-height: 0 !important;
 }
 

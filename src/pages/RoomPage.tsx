@@ -1,6 +1,5 @@
 import { Link } from "react-router";
 import { SiteLayout } from "../components/SiteLayout/SiteLayout";
-import { Window } from "../components/Window/Window";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { useRoomDraftContext } from "../hooks/roomDraftContext";
 import { RoomRenderer } from "../templates/RoomRenderer";
@@ -17,30 +16,28 @@ export function RoomPage() {
   if (!hasSavedRoom) {
     return (
       <SiteLayout>
-        <Window title="my room">
-          <div className={styles.emptyRoom}>
-            <h1 className={styles.pageTitle}>
-              {loadNotice?.kind === "invalid"
-                ? "your saved room couldn't be opened"
-                : "no saved room yet"}
-            </h1>
-            <p>
-              {loadNotice?.kind === "invalid"
-                ? "The room saved in this browser looks damaged, so it can't be shown. Open the editor to start again — saving there will replace it."
-                : loadNotice?.kind === "unavailable"
-                  ? "This browser isn't letting Internetrooms read saved data (private browsing or blocked storage can cause this)."
-                  : "Once you save a room in the editor, it will appear here exactly as visitors would see it."}
-            </p>
-            <div className={styles.heroActions}>
-              <Link to="/templates" className={styles.primaryAction}>
-                Create your room
-              </Link>
-              <Link to="/edit" className={styles.secondaryAction}>
-                Open the editor
-              </Link>
-            </div>
+        <section className={styles.pageIntro} aria-labelledby="room-empty-title">
+          <h1 id="room-empty-title" className={styles.pageTitle}>
+            {loadNotice?.kind === "invalid"
+              ? "your saved room couldn't be opened"
+              : "no saved room yet"}
+          </h1>
+          <p className={styles.pageLead}>
+            {loadNotice?.kind === "invalid"
+              ? "The room saved in this browser couldn't be read, so it can't be shown. Your data hasn't been deleted — open the editor to download a copy or start again."
+              : loadNotice?.kind === "unavailable"
+                ? "This browser isn't letting Internetrooms read saved data (private browsing or blocked storage can cause this)."
+                : "Once you save a room in the editor, it will appear here exactly as visitors would see it."}
+          </p>
+          <div className={styles.actions}>
+            <Link to="/templates" className={styles.primaryAction}>
+              Create a room
+            </Link>
+            <Link to="/edit" className={styles.secondaryAction}>
+              Open the editor
+            </Link>
           </div>
-        </Window>
+        </section>
       </SiteLayout>
     );
   }
@@ -49,7 +46,7 @@ export function RoomPage() {
     <>
       <nav className={styles.roomBar} aria-label="Internetrooms">
         <Link to="/" className={styles.roomBarBrand}>
-          <span aria-hidden="true">★ </span>internetrooms
+          internetrooms
         </Link>
         <p className={styles.roomBarNote}>
           {isDirty

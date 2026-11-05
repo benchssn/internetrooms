@@ -1,18 +1,20 @@
 import type { ComponentType } from "react";
-import {
-  TEMPLATE_IDS,
-  type BackgroundPattern,
-  type RoomTheme,
-  type TemplateId,
-} from "../types/room";
+import { TEMPLATE_IDS, type RoomTheme, type TemplateId } from "../types/room";
 import { ClassicWeb } from "./ClassicWeb/ClassicWeb";
 import { CyberRoom } from "./CyberRoom/CyberRoom";
 import { DreamRoom } from "./DreamRoom/DreamRoom";
 import type { TemplateProps } from "./shared/roomContent";
 
-export type TemplateTheme = Required<RoomTheme> & {
-  backgroundPattern: BackgroundPattern;
-};
+/** The parts of a theme a template provides: colours and pattern. */
+export type TemplateTheme = Pick<
+  RoomTheme,
+  | "backgroundColor"
+  | "primaryColor"
+  | "secondaryColor"
+  | "accentColor"
+  | "textColor"
+  | "backgroundPattern"
+>;
 
 export interface TemplateDefinition {
   id: TemplateId;

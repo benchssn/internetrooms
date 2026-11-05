@@ -3,6 +3,7 @@
   background-color: var(--room-bg);
   color: var(--room-text);
   padding: var(--space-lg) var(--space-md);
+  font-family: var(--room-font-body, var(--font-body));
 }
 
 /* ---- Background patterns (all CSS-generated, no external assets) ---- */
@@ -57,22 +58,12 @@
 }
 
 .main {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-lg);
-  align-items: start;
-}
-
-.column {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-lg);
-  min-width: 0;
+  --widget-gap: var(--space-lg);
 }
 
 .ownerName {
   margin: 0 0 var(--space-sm);
-  font-family: var(--font-heading);
+  font-family: var(--room-font-heading, var(--font-heading));
   font-size: 1.15rem;
   font-weight: 700;
 }
@@ -137,7 +128,7 @@
 
 .trackTitle {
   margin: 0;
-  font-family: var(--font-heading);
+  font-family: var(--room-font-heading, var(--font-heading));
   font-size: 1.1rem;
   font-weight: 700;
 }
@@ -157,6 +148,27 @@
   font-family: var(--font-system);
   font-size: 0.9rem;
   color: var(--empty-muted);
+}
+
+.text p {
+  margin: 0 0 var(--space-md);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.text p:last-child {
+  margin-bottom: 0;
+}
+
+.imageFigure {
+  margin: 0;
+  border: 2px solid var(--border-dark);
+  background: var(--room-secondary);
+  box-shadow: inset 1px 1px 0 var(--border-light);
+}
+
+.footerDecor {
+  margin: var(--space-sm) 0;
 }
 
 .footer {
@@ -180,12 +192,8 @@
   letter-spacing: 0.03em;
 }
 
-@media (max-width: 767px) {
+@container room (max-width: 640px) {
   .page {
     padding: var(--space-md) var(--space-sm);
-  }
-
-  .main {
-    grid-template-columns: 1fr;
   }
 }

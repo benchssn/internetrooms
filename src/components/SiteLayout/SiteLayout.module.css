@@ -1,40 +1,51 @@
+/*
+ * Monochrome editorial site chrome: white paper, near-black ink, thin
+ * rules, big type. Room templates keep their own colourful styling.
+ */
 .site {
+  --site-paper: #ffffff;
+  --site-ink: #111111;
+  --site-muted: #555555;
+  --site-rule: #111111;
+  --site-rule-soft: #d9d9d9;
+  --site-font-display: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --site-font-body: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --site-font-mono: "SFMono-Regular", Menlo, Consolas, "Courier New", monospace;
+
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: var(--room-bg);
-  /* Pixel starfield, matching the Classic Web room. */
-  background-image:
-    radial-gradient(circle at 1px 1px, rgba(255, 223, 104, 0.18) 1px, transparent 0),
-    radial-gradient(circle, rgba(255, 255, 255, 0.55) 1.5px, transparent 2px);
-  background-size:
-    18px 18px,
-    97px 89px;
-  background-position:
-    0 0,
-    23px 41px;
-  color: var(--room-text);
+  background: var(--site-paper);
+  color: var(--site-ink);
+  font-family: var(--site-font-body);
+}
+
+.site a {
+  color: var(--site-ink);
+}
+
+.site a:visited {
+  color: var(--site-ink);
+}
+
+.site :is(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--site-ink);
+  outline-offset: 3px;
+  box-shadow: none;
 }
 
 .main {
   flex: 1;
   width: 100%;
-  max-width: var(--content-max);
+  max-width: 1200px;
   margin: 0 auto;
-  padding: var(--space-xl) var(--space-md);
+  padding: clamp(2rem, 6vw, 5rem) clamp(1rem, 4vw, 2.5rem);
   display: flex;
   flex-direction: column;
-  gap: var(--space-xl);
+  gap: clamp(2.5rem, 7vw, 5rem);
   min-width: 0;
 }
 
 .main:focus {
   outline: none;
-}
-
-@media (max-width: 767px) {
-  .main {
-    padding: var(--space-lg) var(--space-sm);
-    gap: var(--space-lg);
-  }
 }

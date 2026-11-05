@@ -16,13 +16,6 @@ export function SiteHeader() {
       </a>
       <div className={styles.inner}>
         <Link to="/" className={styles.brand}>
-          <img
-            src="/assets/icons/star.svg"
-            alt=""
-            width={18}
-            height={18}
-            className={styles.brandStar}
-          />
           internetrooms
         </Link>
         <nav aria-label="Main" className={styles.nav}>

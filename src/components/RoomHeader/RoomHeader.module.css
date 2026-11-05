@@ -5,7 +5,19 @@
     inset 1px 1px 0 var(--border-light),
     3px 3px 0 var(--shadow);
   padding: var(--space-md) var(--space-lg);
-  text-align: center;
+  text-align: var(--room-align, center);
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: var(--room-align, center);
+  gap: var(--space-md);
+  margin: 0 0 var(--space-sm);
+}
+
+.titleRow > :not(h1) {
+  flex: 0 0 auto;
 }
 
 .brandRow {
@@ -65,8 +77,10 @@
 }
 
 .title {
-  margin: 0 0 var(--space-sm);
-  font-size: clamp(1.4rem, 4vw, 2.1rem);
+  margin: 0;
+  min-width: 0;
+  font-family: var(--room-font-heading, var(--font-heading));
+  font-size: calc(clamp(1.4rem, 4vw, 2.1rem) * var(--room-heading-scale, 1));
   color: var(--room-text);
   overflow-wrap: anywhere;
 }
