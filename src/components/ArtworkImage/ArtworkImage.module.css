@@ -1,0 +1,36 @@
+.image {
+  width: 100%;
+  aspect-ratio: 480 / 320;
+  object-fit: cover;
+  background: var(--room-bg);
+}
+
+.fallback {
+  width: 100%;
+  aspect-ratio: 480 / 320;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0 8px,
+      rgba(0, 0, 0, 0.06) 8px 16px
+    ),
+    var(--room-secondary);
+  color: var(--room-text);
+}
+
+.icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.text {
+  font-family: var(--font-system);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}

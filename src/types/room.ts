@@ -1,11 +1,19 @@
 export type TemplateId = "classic-web";
 
+export type BackgroundPattern = "plain" | "stars" | "checkerboard" | "grid";
+
 export interface RoomTheme {
   backgroundColor: string;
   primaryColor: string;
   secondaryColor: string;
   accentColor: string;
   textColor: string;
+  /**
+   * Optional decorative pattern drawn over the background colour.
+   * Added in Milestone 2; rooms without it render the original
+   * Milestone 1 starfield ("stars").
+   */
+  backgroundPattern?: BackgroundPattern;
 }
 
 export interface RoomLink {

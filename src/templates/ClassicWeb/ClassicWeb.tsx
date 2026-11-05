@@ -1,6 +1,11 @@
+import { ArtworkImage } from "../../components/ArtworkImage/ArtworkImage";
 import { RoomHeader } from "../../components/RoomHeader/RoomHeader";
 import { RoomSection } from "../../components/RoomSection/RoomSection";
 import type { RoomConfig } from "../../types/room";
+import {
+  DEFAULT_PATTERN,
+  isSafeLinkUrl,
+} from "../../validation/roomValidation";
 import styles from "./ClassicWeb.module.css";
 
 export interface ClassicWebProps {
@@ -8,6 +13,9 @@ export interface ClassicWebProps {
 }
 
 export function ClassicWeb({ room }: ClassicWebProps) {
+  // Links still being written in the editor (no label yet) aren't shown.
+  const links = room.links.filter((link) => link.label.trim().length > 0);
+
   const themeStyle = {
     ["--room-bg" as string]: room.theme.backgroundColor,
     ["--room-primary" as string]: room.theme.primaryColor,
@@ -17,7 +25,12 @@ export function ClassicWeb({ room }: ClassicWebProps) {
   };
 
   return (
-    <div className={styles.page} style={themeStyle}>
+    <div
+      className={styles.page}
+      style={themeStyle}
+      data-pattern={room.theme.backgroundPattern ?? DEFAULT_PATTERN}
+      data-testid="classic-web-page"
+    >
       <div className={styles.shell}>
         <RoomHeader title={room.title} tagline={room.tagline} />
 
@@ -32,19 +45,24 @@ export function ClassicWeb({ room }: ClassicWebProps) {
 
             {room.widgets.links ? (
               <RoomSection title="Favourite Links">
-                {room.links.length === 0 ? (
+                {links.length === 0 ? (
                   <p className={styles.empty}>No links yet — check back soon.</p>
                 ) : (
                   <ul className={styles.linkList}>
-                    {room.links.map((link) => (
+                    {links.map((link) => (
                       <li key={link.id}>
-                        <a
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {link.label}
-                        </a>
+                        {isSafeLinkUrl(link.url) ? (
+                          <a
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {link.label}
+                          </a>
+                        ) : (
+                          // Unsafe or unfinished URLs are shown as plain text.
+                          <span>{link.label}</span>
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -65,13 +83,7 @@ export function ClassicWeb({ room }: ClassicWebProps) {
                     {room.artwork.map((art) => (
                       <li key={art.id} className={styles.galleryItem}>
                         <figure className={styles.figure}>
-                          <img
-                            src={art.imageUrl}
-                            alt={art.alt}
-                            width={480}
-                            height={320}
-                            loading="lazy"
-                          />
+                          <ArtworkImage src={art.imageUrl} alt={art.alt} />
                           <figcaption className={styles.caption}>
                             {art.title}
                           </figcaption>

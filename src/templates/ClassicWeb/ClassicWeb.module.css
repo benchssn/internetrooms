@@ -1,11 +1,51 @@
 .page {
   min-height: 100vh;
   background-color: var(--room-bg);
-  background-image:
-    radial-gradient(circle at 1px 1px, rgba(255, 223, 104, 0.18) 1px, transparent 0);
-  background-size: 18px 18px;
   color: var(--room-text);
   padding: var(--space-lg) var(--space-md);
+}
+
+/* ---- Background patterns (all CSS-generated, no external assets) ---- */
+
+.page[data-pattern="plain"] {
+  background-image: none;
+}
+
+/* Pixel stars: the original Milestone 1 dot field plus sparse brighter stars. */
+.page[data-pattern="stars"] {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255, 223, 104, 0.18) 1px, transparent 0),
+    radial-gradient(circle, rgba(255, 255, 255, 0.6) 1.5px, transparent 2px),
+    radial-gradient(circle, rgba(255, 223, 104, 0.5) 1.5px, transparent 2px);
+  background-size:
+    18px 18px,
+    97px 89px,
+    143px 131px;
+  background-position:
+    0 0,
+    23px 41px,
+    71px 7px;
+}
+
+.page[data-pattern="checkerboard"] {
+  background-image: conic-gradient(
+    rgba(255, 255, 255, 0.1) 0 25%,
+    rgba(0, 0, 0, 0.1) 0 50%,
+    rgba(255, 255, 255, 0.1) 0 75%,
+    rgba(0, 0, 0, 0.1) 0
+  );
+  background-size: 32px 32px;
+}
+
+.page[data-pattern="grid"] {
+  background-image:
+    linear-gradient(rgba(255, 223, 104, 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 223, 104, 0.22) 1px, transparent 1px),
+    linear-gradient(transparent 60%, rgba(255, 105, 180, 0.12));
+  background-size:
+    24px 24px,
+    24px 24px,
+    100% 100%;
 }
 
 .shell {
@@ -79,13 +119,6 @@
   border: 2px solid var(--border-dark);
   background: var(--room-secondary);
   box-shadow: inset 1px 1px 0 var(--border-light);
-}
-
-.figure img {
-  width: 100%;
-  aspect-ratio: 480 / 320;
-  object-fit: cover;
-  background: var(--room-bg);
 }
 
 .caption {
