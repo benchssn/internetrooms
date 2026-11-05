@@ -134,7 +134,7 @@ describe("ClassicWeb", () => {
 describe("ClassicWeb — Milestone 2 additions", () => {
   it("applies the background pattern, defaulting to stars", () => {
     const { rerender } = render(<ClassicWeb room={baseRoom} />);
-    const page = screen.getByTestId("classic-web-page");
+    const page = screen.getByTestId("room-page");
     expect(page).toHaveAttribute("data-pattern", "stars");
 
     rerender(
@@ -155,7 +155,7 @@ describe("ClassicWeb — Milestone 2 additions", () => {
 
   it("exposes theme colours as CSS variables", () => {
     renderRoom();
-    const page = screen.getByTestId("classic-web-page");
+    const page = screen.getByTestId("room-page");
     expect(page.style.getPropertyValue("--room-bg")).toBe(
       baseRoom.theme.backgroundColor,
     );

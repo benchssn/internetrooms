@@ -1,38 +1,56 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { PreviewMode } from "./editor/PreviewMode";
-import { PREVIEW_BUTTON_ID, RoomEditor } from "./editor/RoomEditor";
-import { useRoomDraft } from "./hooks/useRoomDraft";
+import { useEffect, useRef } from "react";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router";
+import { RoomDraftProvider } from "./hooks/RoomDraftProvider";
+import { EditPage } from "./pages/EditPage";
+import { HomePage } from "./pages/HomePage";
+import { NotFoundPage } from "./pages/NotFoundPage";
+import { RoomPage } from "./pages/RoomPage";
+import { TemplatesPage } from "./pages/TemplatesPage";
 
-type Mode = "edit" | "preview";
+/** Router base, so the app also works if Vite's `base` is a sub-path. */
+const BASENAME = import.meta.env.BASE_URL.replace(/\/$/, "") || "/";
+
+/**
+ * On client-side navigation, start the new page at the top and move focus
+ * to its main heading so screen-reader users hear where they've arrived.
+ */
+function RouteFocus() {
+  const { pathname } = useLocation();
+  const previous = useRef(pathname);
+
+  useEffect(() => {
+    if (previous.current === pathname) return;
+    previous.current = pathname;
+    window.scrollTo(0, 0);
+    const heading = document.querySelector<HTMLElement>("h1");
+    if (heading) {
+      if (!heading.hasAttribute("tabindex")) heading.setAttribute("tabindex", "-1");
+      heading.focus({ preventScroll: true });
+    }
+  }, [pathname]);
+
+  return null;
+}
+
+export function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/templates" element={<TemplatesPage />} />
+      <Route path="/edit" element={<EditPage />} />
+      <Route path="/room" element={<RoomPage />} />
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
+  );
+}
 
 export default function App() {
-  const draft = useRoomDraft();
-  const [mode, setMode] = useState<Mode>("edit");
-  const previousMode = useRef<Mode>(mode);
-
-  const enterPreview = useCallback(() => setMode("preview"), []);
-  const exitPreview = useCallback(() => setMode("edit"), []);
-
-  // Start each mode at the top, and return focus to the Preview button
-  // when coming back to the editor.
-  useEffect(() => {
-    if (previousMode.current === mode) return;
-    previousMode.current = mode;
-    window.scrollTo(0, 0);
-    if (mode === "edit") {
-      document.getElementById(PREVIEW_BUTTON_ID)?.focus();
-    }
-  }, [mode]);
-
-  if (mode === "preview") {
-    return (
-      <PreviewMode
-        room={draft.draftRoom}
-        isDirty={draft.isDirty}
-        onExit={exitPreview}
-      />
-    );
-  }
-
-  return <RoomEditor draft={draft} onPreview={enterPreview} />;
+  return (
+    <BrowserRouter basename={BASENAME}>
+      <RoomDraftProvider>
+        <RouteFocus />
+        <AppRoutes />
+      </RoomDraftProvider>
+    </BrowserRouter>
+  );
 }

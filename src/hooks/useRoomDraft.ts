@@ -6,7 +6,8 @@ import {
   saveRoom,
   type SaveResult,
 } from "../storage/roomStorage";
-import type { RoomConfig } from "../types/room";
+import { applyTemplate } from "../templates/applyTemplate";
+import type { RoomConfig, TemplateId } from "../types/room";
 import {
   getFieldErrors,
   roomsEqual,
@@ -26,18 +27,21 @@ export type SaveOutcome =
 interface InitialState {
   room: RoomConfig;
   notice: LoadNotice | null;
+  /** True when `room` came from a valid saved copy in localStorage. */
+  fromStorage: boolean;
 }
 
 function readInitialState(): InitialState {
   const result = loadRoom();
   switch (result.status) {
     case "ok":
-      return { room: result.room, notice: null };
+      return { room: result.room, notice: null, fromStorage: true };
     case "empty":
-      return { room: getDefaultRoom(), notice: null };
+      return { room: getDefaultRoom(), notice: null, fromStorage: false };
     case "invalid":
       return {
         room: getDefaultRoom(),
+        fromStorage: false,
         notice: {
           kind: "invalid",
           message: `Your saved room couldn't be loaded, so the default room is shown instead. ${result.reason} The saved data has been left untouched — saving or resetting will replace it.`,
@@ -46,6 +50,7 @@ function readInitialState(): InitialState {
     case "unavailable":
       return {
         room: getDefaultRoom(),
+        fromStorage: false,
         notice: {
           kind: "unavailable",
           message: `${result.reason} You can still edit your room, but changes may not be saved.`,
@@ -61,6 +66,7 @@ export function useRoomDraft() {
   const [loadNotice, setLoadNotice] = useState<LoadNotice | null>(
     initial.notice,
   );
+  const [hasSavedRoom, setHasSavedRoom] = useState(initial.fromStorage);
   /** After a failed save, "required" errors are shown everywhere. */
   const [showAllErrors, setShowAllErrors] = useState(false);
 
@@ -95,6 +101,7 @@ export function useRoomDraft() {
     }
 
     setSavedRoom(draftRoom);
+    setHasSavedRoom(true);
     setShowAllErrors(false);
     setLoadNotice(null);
     return { ok: true };
@@ -112,9 +119,18 @@ export function useRoomDraft() {
     setShowAllErrors(false);
     if (result.ok) {
       setSavedRoom(fresh);
+      setHasSavedRoom(false);
       setLoadNotice(null);
     }
     return result;
+  }, []);
+
+  /**
+   * Switches the draft to another template (applying its default theme)
+   * while keeping all content. Nothing is saved until the user saves.
+   */
+  const selectTemplate = useCallback((id: TemplateId) => {
+    setDraftRoom((current) => applyTemplate(current, id));
   }, []);
 
   const dismissLoadNotice = useCallback(() => setLoadNotice(null), []);
@@ -134,6 +150,7 @@ export function useRoomDraft() {
   return {
     draftRoom,
     savedRoom,
+    hasSavedRoom,
     isDirty,
     fieldErrors,
     showAllErrors,
@@ -141,6 +158,7 @@ export function useRoomDraft() {
     updateDraft,
     save,
     resetToDefault,
+    selectTemplate,
     dismissLoadNotice,
   };
 }

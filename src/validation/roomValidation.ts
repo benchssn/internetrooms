@@ -1,9 +1,11 @@
-import type {
-  BackgroundPattern,
-  RoomArtwork,
-  RoomConfig,
-  RoomLink,
-  RoomTheme,
+import {
+  TEMPLATE_IDS,
+  type BackgroundPattern,
+  type RoomArtwork,
+  type RoomConfig,
+  type RoomLink,
+  type RoomTheme,
+  type TemplateId,
 } from "../types/room";
 
 /* ------------------------------------------------------------------ */
@@ -74,6 +76,13 @@ export function parseHexColour(input: string): string | null {
     return `#${raw.toUpperCase()}`;
   }
   return null;
+}
+
+export function isTemplateId(value: unknown): value is TemplateId {
+  return (
+    typeof value === "string" &&
+    (TEMPLATE_IDS as readonly string[]).includes(value)
+  );
 }
 
 export function isBackgroundPattern(value: unknown): value is BackgroundPattern {
@@ -338,8 +347,8 @@ export function validateRoomConfig(input: unknown): RoomValidationResult {
   }
 
   if (input.schemaVersion !== 1) errors.push("schemaVersion must be 1");
-  if (input.template !== "classic-web")
-    errors.push('template must be "classic-web"');
+  if (!isTemplateId(input.template))
+    errors.push(`template must be one of: ${TEMPLATE_IDS.join(", ")}`);
   checkString(errors, input.id, "id", LIMITS.id, true);
   checkString(errors, input.title, "title", LIMITS.title, true);
   checkString(errors, input.tagline, "tagline", LIMITS.tagline, false);
@@ -467,7 +476,7 @@ export function validateRoomConfig(input: unknown): RoomValidationResult {
   const room: RoomConfig = {
     schemaVersion: 1,
     id: input.id as string,
-    template: "classic-web",
+    template: input.template as TemplateId,
     title: input.title as string,
     tagline: input.tagline as string,
     owner: {

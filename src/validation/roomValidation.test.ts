@@ -88,6 +88,13 @@ describe("validateRoomConfig", () => {
     if (result.ok) expect(result.room.theme.backgroundPattern).toBeUndefined();
   });
 
+  it.each(["classic-web", "cyber-room", "dream-room"])(
+    "accepts the %s template",
+    (template) => {
+      expect(validateRoomConfig({ ...getDefaultRoom(), template }).ok).toBe(true);
+    },
+  );
+
   it("strips unknown fields", () => {
     const input = { ...getDefaultRoom(), injected: "<script>" };
     const result = validateRoomConfig(input);

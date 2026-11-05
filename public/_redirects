@@ -1,0 +1,2 @@
+# SPA fallback (Netlify / Cloudflare Pages): serve the app for every route.
+/*    /index.html   200

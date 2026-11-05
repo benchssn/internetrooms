@@ -1,4 +1,8 @@
-import { getDefaultRoom } from "../../data/defaultRoom";
+import {
+  FALLBACK_TEMPLATE_ID,
+  getTemplate,
+  TEMPLATE_REGISTRY,
+} from "../../templates/templateRegistry";
 import { THEME_COLOUR_KEYS } from "../../validation/roomValidation";
 import { ColourField, EditorSection } from "../EditorField";
 import {
@@ -14,8 +18,11 @@ export function ThemeSection({ room, update, announce }: SectionProps) {
   const ratio = contrastRatio(theme.textColor, theme.primaryColor);
   const lowContrast = ratio < 4.5;
 
+  const template =
+    getTemplate(room.template) ?? TEMPLATE_REGISTRY[FALLBACK_TEMPLATE_ID];
+
   const restoreColours = () => {
-    const defaults = getDefaultRoom().theme;
+    const defaults = template.defaultTheme;
     update((r) => ({
       ...r,
       theme: {
@@ -27,7 +34,7 @@ export function ThemeSection({ room, update, announce }: SectionProps) {
         textColor: defaults.textColor,
       },
     }));
-    announce("Template colours restored.");
+    announce(`${template.name} colours restored.`);
   };
 
   return (
@@ -62,7 +69,7 @@ export function ThemeSection({ room, update, announce }: SectionProps) {
         className={styles.secondaryButton}
         onClick={restoreColours}
       >
-        <span aria-hidden="true">↺ </span>Restore template colours
+        <span aria-hidden="true">↺ </span>Restore {template.name} colours
       </button>
     </EditorSection>
   );

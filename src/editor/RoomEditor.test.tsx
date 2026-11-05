@@ -9,6 +9,8 @@ import type { RoomConfig } from "../types/room";
 const defaults = getDefaultRoom();
 
 function setup() {
+  // The editor lives at /edit since Milestone 3.
+  window.history.replaceState(null, "", "/edit");
   const user = userEvent.setup();
   const utils = render(<App />);
   return { user, ...utils };
@@ -31,7 +33,7 @@ function storedRoom(): RoomConfig {
 }
 
 function previewPage() {
-  return within(preview()).getByTestId("classic-web-page");
+  return within(preview()).getByTestId("room-page");
 }
 
 describe("Room editor", () => {
@@ -110,7 +112,7 @@ describe("Room editor", () => {
       screen.getByRole("textbox", { name: /accent colour hex/i }),
     ).toHaveValue("#00FF00");
 
-    await user.click(screen.getByRole("button", { name: /restore template colours/i }));
+    await user.click(screen.getByRole("button", { name: /restore classic web colours/i }));
     expect(previewPage().style.getPropertyValue("--room-accent")).toBe(
       defaults.theme.accentColor,
     );

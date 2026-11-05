@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router";
 import type { RoomDraft } from "../hooks/useRoomDraft";
-import { ClassicWeb } from "../templates/ClassicWeb/ClassicWeb";
+import { RoomRenderer } from "../templates/RoomRenderer";
 import type { FieldError } from "../validation/roomValidation";
 import type { SectionProps } from "./editorUtils";
 import styles from "./RoomEditor.module.css";
@@ -10,6 +11,7 @@ import { GallerySection } from "./sections/GallerySection";
 import { IdentitySection } from "./sections/IdentitySection";
 import { LinksSection } from "./sections/LinksSection";
 import { MusicSection } from "./sections/MusicSection";
+import { TemplateSection } from "./sections/TemplateSection";
 import { ThemeSection } from "./sections/ThemeSection";
 import { WidgetsSection } from "./sections/WidgetsSection";
 
@@ -23,9 +25,11 @@ type Flash =
 export interface RoomEditorProps {
   draft: RoomDraft;
   onPreview: () => void;
+  /** Optional message to show once on arrival (e.g. after a template switch). */
+  initialMessage?: string | null;
 }
 
-export function RoomEditor({ draft, onPreview }: RoomEditorProps) {
+export function RoomEditor({ draft, onPreview, initialMessage }: RoomEditorProps) {
   const {
     draftRoom,
     isDirty,
@@ -38,7 +42,11 @@ export function RoomEditor({ draft, onPreview }: RoomEditorProps) {
     dismissLoadNotice,
   } = draft;
 
-  const [flash, setFlash] = useState<Flash | null>(null);
+  const [flash, setFlash] = useState<Flash | null>(() =>
+    initialMessage
+      ? { kind: "success", text: initialMessage, key: Date.now() }
+      : null,
+  );
   const [announcement, setAnnouncement] = useState("");
 
   // Success messages fade away on their own; errors stay until replaced.
@@ -115,12 +123,19 @@ export function RoomEditor({ draft, onPreview }: RoomEditorProps) {
     <div className={styles.app}>
       <header className={styles.toolbar}>
         <div className={styles.brand}>
-          <span aria-hidden="true" className={styles.brandStar}>
-            ★
-          </span>
-          <span className={styles.brandName}>Internetrooms</span>
+          <Link to="/" className={styles.brandLink}>
+            <span aria-hidden="true" className={styles.brandStar}>
+              ★
+            </span>
+            <span className={styles.brandName}>internetrooms</span>
+          </Link>
           <span className={styles.brandSub}>room editor</span>
         </div>
+
+        <nav aria-label="Site" className={styles.siteNav}>
+          <Link to="/templates">Templates</Link>
+          <Link to="/room">My room</Link>
+        </nav>
 
         <p
           className={`${styles.saveState} ${
@@ -207,6 +222,7 @@ export function RoomEditor({ draft, onPreview }: RoomEditorProps) {
             <span aria-hidden="true">↓ </span>Jump to live preview
           </a>
 
+          <TemplateSection {...sectionProps} />
           <IdentitySection {...sectionProps} />
           <ThemeSection {...sectionProps} />
           <BackgroundSection {...sectionProps} />
@@ -227,7 +243,7 @@ export function RoomEditor({ draft, onPreview }: RoomEditorProps) {
             <span aria-hidden="true">◉ </span>Live preview
           </h2>
           <div className={styles.previewFrame}>
-            <ClassicWeb room={draftRoom} />
+            <RoomRenderer room={draftRoom} />
           </div>
         </section>
       </div>
