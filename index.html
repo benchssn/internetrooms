@@ -1,41 +1,13 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>internetrooms</title>
-<style>
-  html, body { margin: 0; min-height: 100%; background: #05060a; color: #cfe0ff; }
-  body {
-    font: 16px/1.6 ui-monospace, Menlo, monospace;
-    display: flex; justify-content: center; padding: 18vh 16px 16px;
-  }
-  main { width: 100%; max-width: 480px; }
-  h1 { font-size: 2rem; font-weight: 600; margin: 0 0 1.5rem; letter-spacing: .02em; }
-  ul { list-style: none; margin: 0; padding: 0; }
-  li { border-top: 1px solid #1d2a40; }
-  li:last-child { border-bottom: 1px solid #1d2a40; }
-  a { display: block; padding: .6rem 0; color: #8aa4c8; text-decoration: none; }
-  a:hover, a:focus { color: #cfe0ff; }
-  a::before { content: "→ "; color: #3a4c6a; }
-  ul.sub { margin: -.4rem 0 .3rem 1.5rem; font-size: .875rem; }
-  ul.sub li { border: 0; }
-  ul.sub a { padding: .2rem 0; }
-  ul.sub a::before { content: "↳ "; }
-</style>
-</head>
-<body>
-<main>
-  <h1>internetrooms</h1>
-  <ul>
-    <li><a href="glyph-drift/index.html">glyph drift</a></li>
-    <li>
-      <a href="sine-garden/index.html">sine garden</a>
-      <ul class="sub">
-        <li><a href="sine-garden/clock.html">master clock</a></li>
-      </ul>
-    </li>
-  </ul>
-</main>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Internetrooms</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320" viewBox="0 0 480 320" role="img" aria-label="Abstract geometric shapes and stars against a blue background">
+  <rect width="480" height="320" fill="#1a2f6b"/>
+  <rect x="24" y="24" width="432" height="272" fill="#263F88" stroke="#FFDF68" stroke-width="3"/>
+  <circle cx="120" cy="100" r="48" fill="#A6B5E7" opacity="0.9"/>
+  <rect x="200" y="70" width="90" height="90" fill="#D8DCF1" transform="rotate(18 245 115)"/>
+  <polygon points="340,70 370,130 310,130" fill="#FFDF68"/>
+  <polygon points="80,220 92,248 124,252 100,274 106,306 80,288 54,306 60,274 36,252 68,248" fill="#FFDF68"/>
+  <polygon points="220,200 228,220 250,222 232,236 238,258 220,246 202,258 208,236 190,222 212,220" fill="#D8DCF1"/>
+  <polygon points="380,180 390,205 418,208 396,226 402,252 380,236 358,252 364,226 342,208 370,205" fill="#FFDF68"/>
+  <line x1="40" y1="160" x2="440" y2="160" stroke="#A6B5E7" stroke-width="2" stroke-dasharray="6 6"/>
+  <circle cx="400" cy="90" r="10" fill="#FFDF68"/>
+  <circle cx="150" cy="250" r="8" fill="#D8DCF1"/>
+</svg>

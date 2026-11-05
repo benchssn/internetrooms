@@ -1,0 +1,158 @@
+.page {
+  min-height: 100vh;
+  background-color: var(--room-bg);
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255, 223, 104, 0.18) 1px, transparent 0);
+  background-size: 18px 18px;
+  color: var(--room-text);
+  padding: var(--space-lg) var(--space-md);
+}
+
+.shell {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  min-width: 0;
+}
+
+.ownerName {
+  margin: 0 0 var(--space-sm);
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.bio {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.linkList {
+  list-style: square;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.linkList a {
+  font-weight: 700;
+  text-decoration-thickness: 2px;
+  overflow-wrap: anywhere;
+}
+
+.linkList a:hover {
+  color: var(--room-text);
+  background: var(--room-accent);
+}
+
+.gallery {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-md);
+}
+
+.galleryItem {
+  min-width: 0;
+}
+
+.figure {
+  margin: 0;
+  border: 2px solid var(--border-dark);
+  background: var(--room-secondary);
+  box-shadow: inset 1px 1px 0 var(--border-light);
+}
+
+.figure img {
+  width: 100%;
+  aspect-ratio: 480 / 320;
+  object-fit: cover;
+  background: var(--room-bg);
+}
+
+.caption {
+  padding: var(--space-sm);
+  font-family: var(--font-system);
+  font-size: 0.85rem;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.music {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.trackTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.artist {
+  margin: 0;
+  font-style: italic;
+}
+
+.musicDesc {
+  margin: var(--space-sm) 0 0;
+  font-size: 0.95rem;
+}
+
+.empty {
+  margin: 0;
+  font-family: var(--font-system);
+  font-size: 0.9rem;
+  color: var(--empty-muted);
+}
+
+.footer {
+  text-align: center;
+  padding: var(--space-md);
+  background: var(--room-primary);
+  border: 2px solid var(--border-dark);
+  box-shadow:
+    inset 1px 1px 0 var(--border-light),
+    3px 3px 0 var(--shadow);
+}
+
+.footer p {
+  margin: 0 0 var(--space-xs);
+  overflow-wrap: anywhere;
+}
+
+.attribution {
+  font-family: var(--font-system);
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+}
+
+@media (max-width: 767px) {
+  .page {
+    padding: var(--space-md) var(--space-sm);
+  }
+
+  .main {
+    grid-template-columns: 1fr;
+  }
+}

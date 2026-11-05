@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "room-001",
+  "template": "classic-web",
+  "title": "my little corner of the internet",
+  "tagline": "welcome to my digital universe ★",
+  "owner": {
+    "displayName": "internet explorer",
+    "bio": "i like music, strange websites, art, and exploring the internet."
+  },
+  "theme": {
+    "backgroundColor": "#263F88",
+    "primaryColor": "#D8DCF1",
+    "secondaryColor": "#A6B5E7",
+    "accentColor": "#FFDF68",
+    "textColor": "#202039"
+  },
+  "widgets": {
+    "about": true,
+    "gallery": true,
+    "music": true,
+    "links": true,
+    "guestbook": false
+  },
+  "artwork": [
+    {
+      "id": "art-001",
+      "title": "Digital Dreams",
+      "imageUrl": "/assets/images/digital-dreams.svg",
+      "alt": "Abstract geometric shapes and stars against a blue background"
+    }
+  ],
+  "music": {
+    "title": "Currently exploring",
+    "artist": "Internetrooms",
+    "description": "A little space for sharing what I'm listening to."
+  },
+  "links": [
+    {
+      "id": "link-001",
+      "label": "Internet Archive",
+      "url": "https://archive.org"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+:root {
+  --room-bg: #263f88;
+  --room-primary: #d8dcf1;
+  --room-secondary: #a6b5e7;
+  --room-accent: #ffdf68;
+  --room-text: #202039;
+
+  --border-dark: #0f1630;
+  --border-light: #ffffff;
+  --shadow: #101828;
+  --focus-ring: #ffdf68;
+  --link: #1a2f7a;
+  --link-visited: #4a2f7a;
+  --empty-muted: #4a5678;
+
+  --font-body: Tahoma, Verdana, Geneva, sans-serif;
+  --font-heading: "Trebuchet MS", Tahoma, sans-serif;
+  --font-system: "Courier New", Courier, monospace;
+
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+
+  --radius-none: 0;
+  --content-max: 1100px;
+}
