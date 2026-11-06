@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router";
 import { useAuth } from "../../auth/authContext";
 import { safeNextPath } from "../../auth/validation";
+import { useProfile } from "../../cloud/profileContext";
 import styles from "./AccountNav.module.css";
 
 export interface AccountNavProps {
@@ -16,6 +17,7 @@ export interface AccountNavProps {
  */
 export function AccountNav({ tone = "site" }: AccountNavProps) {
   const { status, user, signOut } = useAuth();
+  const { status: profileStatus, profile } = useProfile();
   const location = useLocation();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,10 +44,20 @@ export function AccountNav({ tone = "site" }: AccountNavProps) {
 
   return (
     <div className={className} role="group" aria-label="Account">
-      <span className={styles.who} title={user?.email ?? undefined}>
-        <span className={styles.visuallyHidden}>Signed in as </span>
-        {user?.email ?? "Signed in"}
-      </span>
+      {profileStatus === "ready" && profile ? (
+        <Link to="/settings" className={styles.link} title="Your profile and room settings">
+          <span className={styles.visuallyHidden}>Signed in as </span>@{profile.username}
+        </Link>
+      ) : profileStatus === "missing" ? (
+        <Link to="/settings" className={styles.link}>
+          Choose a username
+        </Link>
+      ) : (
+        <span className={styles.who} title={user?.email ?? undefined}>
+          <span className={styles.visuallyHidden}>Signed in as </span>
+          {user?.email ?? "Signed in"}
+        </span>
+      )}
       <button
         type="button"
         className={styles.logout}

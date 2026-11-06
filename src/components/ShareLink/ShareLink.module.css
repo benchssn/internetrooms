@@ -1,0 +1,64 @@
+.share {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.url {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 0.75rem;
+  font-family: "SFMono-Regular", Menlo, Consolas, "Courier New", monospace;
+  font-size: 0.9rem;
+  color: #111111;
+  background: #ffffff;
+  border: 1px solid #111111;
+  border-radius: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.button,
+.button:visited {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 1rem;
+  font: inherit;
+  font-weight: 700;
+  color: #111111 !important;
+  text-decoration: none;
+  background: #ffffff;
+  border: 1px solid #111111;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: #111111;
+  color: #ffffff !important;
+}
+
+.button:focus-visible,
+.url:focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: 2px;
+}
+
+.status {
+  margin: 0;
+  min-height: 1.25em;
+  font-size: 0.85rem;
+}

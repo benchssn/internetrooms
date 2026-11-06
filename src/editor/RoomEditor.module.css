@@ -1437,3 +1437,29 @@
   flex-direction: column;
   min-width: 0;
 }
+
+/* ---- Publishing (Milestone 5) ---- */
+
+a.toolbarButton,
+.app a.toolbarButton,
+.app a.toolbarButton:visited {
+  display: inline-flex;
+  align-items: center;
+  color: var(--ed-ink);
+  text-decoration: none;
+}
+
+.publishAnchor:focus {
+  outline: none;
+}
+
+.publishAnchor:focus-visible > section {
+  outline: 3px solid var(--ed-focus);
+  outline-offset: 2px;
+}
+
+.publishState {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}

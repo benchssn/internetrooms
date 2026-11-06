@@ -1,51 +1,54 @@
 import { useEffect, useState } from "react";
+import { loadCloudApi } from "../cloud/cloudClient";
 import { getAssetUrl } from "../storage/assetStore";
 import type { ImageSource } from "../types/room";
-import { isSafeImageUrl } from "../validation/roomValidation";
+import { isSafeImageUrl, isStoredImagePath } from "../validation/roomValidation";
 
 export type ImageUrlState =
   | { status: "none"; url: null }
   | { status: "loading"; url: null }
   | { status: "ready"; url: string }
-  /** Unsafe URL, or an uploaded image that no longer exists. */
+  /** Unsafe URL, missing upload, or an image the viewer may not see. */
   | { status: "unavailable"; url: null };
 
-function syncState(source: ImageSource | null): ImageUrlState {
-  if (!source) return { status: "none", url: null };
-  if (source.kind === "url") {
-    return isSafeImageUrl(source.url)
-      ? { status: "ready", url: source.url }
-      : { status: "unavailable", url: null };
-  }
-  return { status: "loading", url: null };
+/** Short-lived signed URL for an image stored with a published room. */
+async function storedUrl(path: string): Promise<string | null> {
+  if (!isStoredImagePath(path)) return null;
+  const api = await loadCloudApi();
+  return api ? api.storedImageUrl(path) : null;
 }
 
 /**
  * Turns an ImageSource into something an <img> or CSS background can use.
- * URL sources are checked synchronously; uploaded assets are read from
- * IndexedDB and exposed as blob: URLs.
+ * - url:    checked synchronously
+ * - asset:  read from this browser's IndexedDB (blob: URL)
+ * - stored: a short-lived signed URL from Supabase Storage (the bucket is
+ *           private, so access follows the room's visibility)
  */
 export function useImageSourceUrl(source: ImageSource | null): ImageUrlState {
-  const assetId = source?.kind === "asset" ? source.assetId : null;
+  const asyncKey =
+    source?.kind === "asset" ? `asset:${source.assetId}` : source?.kind === "stored" ? `stored:${source.path}` : null;
   const urlValue = source?.kind === "url" ? source.url : null;
-  const [asset, setAsset] = useState<{ id: string; url: string | null } | null>(null);
+  const [resolved, setResolved] = useState<{ key: string; url: string | null } | null>(null);
 
   useEffect(() => {
-    if (!assetId) return;
-    let cancelled = false;
-    void getAssetUrl(assetId).then((url) => {
-      if (!cancelled) setAsset({ id: assetId, url });
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [assetId]);
+    if (!asyncKey) return;
+    const lifetime = new AbortController();
+    const [kind, ...rest] = asyncKey.split(":");
+    const id = rest.join(":");
+    const loading = kind === "asset" ? getAssetUrl(id) : storedUrl(id);
+    void loading
+      .catch(() => null)
+      .then((url) => {
+        if (!lifetime.signal.aborted) setResolved({ key: asyncKey, url });
+      });
+    return () => lifetime.abort();
+  }, [asyncKey]);
 
-  if (assetId) {
-    if (asset?.id !== assetId) return { status: "loading", url: null };
-    return asset.url
-      ? { status: "ready", url: asset.url }
-      : { status: "unavailable", url: null };
+  if (asyncKey) {
+    if (resolved?.key !== asyncKey) return { status: "loading", url: null };
+    return resolved.url ? { status: "ready", url: resolved.url } : { status: "unavailable", url: null };
   }
-  return syncState(urlValue === null ? null : { kind: "url", url: urlValue });
+  if (urlValue === null) return { status: "none", url: null };
+  return isSafeImageUrl(urlValue) ? { status: "ready", url: urlValue } : { status: "unavailable", url: null };
 }

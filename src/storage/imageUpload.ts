@@ -87,7 +87,10 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number) 
  * metadata (including camera GPS data) and anything that isn't image data,
  * and scales very large images down. Animated GIFs become still images.
  */
-export async function processImage(file: Blob): Promise<ProcessedImage> {
+export async function processImage(
+  file: Blob,
+  maxDimension: number = MAX_IMAGE_DIMENSION,
+): Promise<ProcessedImage> {
   if (typeof createImageBitmap !== "function") {
     throw new Error("This browser can't process images.");
   }
@@ -97,7 +100,7 @@ export async function processImage(file: Blob): Promise<ProcessedImage> {
   } catch {
     throw new Error("That image couldn't be opened. It may be damaged.");
   }
-  const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(bitmap.width, bitmap.height));
+  const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
   const width = Math.max(1, Math.round(bitmap.width * scale));
   const height = Math.max(1, Math.round(bitmap.height * scale));
 
@@ -120,7 +123,7 @@ export async function processImage(file: Blob): Promise<ProcessedImage> {
  * The decoder used by uploads. Kept on an object so tests (and any future
  * worker-based implementation) can swap it without changing callers.
  */
-export const imageProcessor = {
+export const imageProcessor: { process: (file: Blob, maxDimension?: number) => Promise<ProcessedImage> } = {
   process: processImage,
 };
 
