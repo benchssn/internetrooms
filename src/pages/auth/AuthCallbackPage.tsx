@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth, type CallbackResult } from "../../auth/authContext";
+import { useProfile } from "../../cloud/profileContext";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { AuthLayout, FormAlert, FormNotice } from "./AuthForm";
 import styles from "./auth.module.css";
@@ -13,6 +14,7 @@ import styles from "./auth.module.css";
 export function AuthCallbackPage() {
   useDocumentTitle("Signing you in");
   const { completeCallback } = useAuth();
+  const { status: profileStatus } = useProfile();
   const navigate = useNavigate();
   const [result, setResult] = useState<CallbackResult | null>(null);
   // Read once: the URL is cleaned up after processing.
@@ -52,9 +54,15 @@ export function AuthCallbackPage() {
           <p>Your email address is verified and you're logged in.</p>
         </FormNotice>
         <div className={styles.actions}>
-          <Link to="/edit" className={styles.submit}>
-            Go to your room
-          </Link>
+          {profileStatus === "missing" ? (
+            <Link to="/settings" className={styles.submit}>
+              Choose your username
+            </Link>
+          ) : (
+            <Link to="/edit" className={styles.submit}>
+              Go to your room
+            </Link>
+          )}
           <Link to="/" className={styles.secondary}>
             Homepage
           </Link>

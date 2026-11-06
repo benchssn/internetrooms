@@ -42,7 +42,8 @@ export function ImageSourceField({
   const groupName = useId();
   const fileId = useId();
   const statusId = useId();
-  const [mode, setMode] = useState<"url" | "asset">(value?.kind ?? "url");
+  // Images from a loaded published room ("stored") are shown as uploads.
+  const [mode, setMode] = useState<"url" | "asset">(value?.kind === "url" ? "url" : value ? "asset" : "url");
   const [busy, setBusy] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const { available, assets } = useAssetList();
@@ -142,6 +143,12 @@ export function ImageSourceField({
             <p className={styles.error}>
               <span aria-hidden="true">⚠ </span>
               {error.message}
+            </p>
+          ) : null}
+
+          {value?.kind === "stored" ? (
+            <p className={styles.hint}>
+              Currently using an image from your published room. Upload or pick another to replace it.
             </p>
           ) : null}
 

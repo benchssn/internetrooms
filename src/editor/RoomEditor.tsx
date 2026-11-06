@@ -12,6 +12,7 @@ import { DecorationsSection } from "./sections/DecorationsSection";
 import { IdentitySection } from "./sections/IdentitySection";
 import { ImageLibrarySection } from "./sections/ImageLibrarySection";
 import { LayoutSection } from "./sections/LayoutSection";
+import { PUBLISH_SECTION_ID, PublishSection } from "./sections/PublishSection";
 import { TemplateSection } from "./sections/TemplateSection";
 import { ThemeSection } from "./sections/ThemeSection";
 import { TypographySection } from "./sections/TypographySection";
@@ -249,6 +250,18 @@ export function RoomEditor({ draft, onPreview, initialMessage }: RoomEditorProps
           <button type="button" className={styles.primaryButton} onClick={handleSave}>
             Save
           </button>
+          <a
+            href={`#${PUBLISH_SECTION_ID}`}
+            className={styles.toolbarButton}
+            onClick={(event) => {
+              event.preventDefault();
+              const target = document.getElementById(PUBLISH_SECTION_ID);
+              target?.scrollIntoView({ block: "start" });
+              target?.focus({ preventScroll: true });
+            }}
+          >
+            Publish
+          </a>
           <button
             id={PREVIEW_BUTTON_ID}
             type="button"
@@ -328,6 +341,7 @@ export function RoomEditor({ draft, onPreview, initialMessage }: RoomEditorProps
             <span aria-hidden="true">↓</span>Jump to live preview
           </a>
 
+          <PublishSection {...sectionProps} />
           <TemplateSection {...sectionProps} />
           <IdentitySection {...sectionProps} />
           <LayoutSection {...sectionProps} />

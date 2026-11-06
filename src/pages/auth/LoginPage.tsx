@@ -1,6 +1,7 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { useAuth } from "../../auth/authContext";
+import { useProfile } from "../../cloud/profileContext";
 import { safeNextPath, validateEmail, validateLoginPassword, type FieldErrors } from "../../auth/validation";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { AccountsUnavailable, AuthLayout, Field, FormAlert, ShowPasswordToggle } from "./AuthForm";
@@ -22,6 +23,15 @@ export function LoginPage() {
   const [formError, setFormError] = useState<{ message: string; unverified: boolean } | null>(null);
   const [pending, setPending] = useState(false);
   const [resent, setResent] = useState<string | null>(null);
+  const [signedIn, setSignedIn] = useState(false);
+  const { status: profileStatus } = useProfile();
+
+  // After logging in, people without a username go to profile setup first.
+  useEffect(() => {
+    if (!signedIn) return;
+    if (profileStatus === "missing") navigate("/settings", { replace: true });
+    else if (profileStatus === "ready" || profileStatus === "error") navigate(next, { replace: true });
+  }, [signedIn, profileStatus, navigate, next]);
 
   if (status === "unavailable") {
     return (
@@ -50,7 +60,8 @@ export function LoginPage() {
       setFormError({ message: result.message, unverified: result.code === "email_not_confirmed" });
       return;
     }
-    navigate(next, { replace: true });
+    // Navigation happens once the profile has loaded (see the effect above).
+    setSignedIn(true);
   };
 
   return (

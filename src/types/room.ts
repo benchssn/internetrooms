@@ -24,13 +24,16 @@ export type TemplateId = (typeof TEMPLATE_IDS)[number];
 /* ------------------------------------------------------------------ */
 
 /**
- * Where an image comes from: an https:// URL (or bundled /assets/ path),
- * or an uploaded file stored in IndexedDB and referenced by id. Room JSON
- * never contains image data itself.
+ * Where an image comes from. Room JSON never contains image data itself.
+ * - url:    an https:// URL or a bundled /assets/ path
+ * - asset:  an upload kept in this browser (IndexedDB), referenced by id
+ * - stored: an image uploaded with a published room (Supabase Storage),
+ *           "<room asset folder>/<uuid>.<ext>" in the private room-assets bucket
  */
 export type ImageSource =
   | { kind: "url"; url: string }
-  | { kind: "asset"; assetId: string };
+  | { kind: "asset"; assetId: string }
+  | { kind: "stored"; path: string };
 
 /* ------------------------------------------------------------------ */
 /* Shared content pieces                                               */

@@ -1,0 +1,168 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rule {
+  width: 100%;
+  margin: 0.5rem 0;
+  border: 0;
+  border-top: 1px solid #111111;
+}
+
+.preview {
+  margin: -0.5rem 0 0;
+  font-size: 0.85rem;
+  color: var(--site-muted);
+  overflow-wrap: anywhere;
+}
+
+.mono {
+  font-family: "SFMono-Regular", Menlo, Consolas, "Courier New", monospace;
+  font-size: 0.85em;
+  color: #111111;
+}
+
+.textarea {
+  width: 100%;
+  padding: 0.75rem 0.85rem;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #111111;
+  background: #ffffff;
+  border: 1px solid #111111;
+  border-radius: 0;
+  resize: vertical;
+}
+
+.textarea:focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: 2px;
+}
+
+.avatarRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.avatar,
+.avatarEmpty {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  border: 1px solid #111111;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatarEmpty {
+  display: grid;
+  place-items: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: #f2f2f2;
+}
+
+.avatarActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.avatarActions label:has(+ .fileInput:focus-visible) {
+  outline: 2px solid #111111;
+  outline-offset: 3px;
+}
+
+.roomStatus {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.roomStatus p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.statusLine {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.statusMark {
+  font-size: 1rem;
+}
+
+.visibility {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.legend {
+  margin-bottom: 0.5rem;
+  padding: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid #d9d9d9;
+  cursor: pointer;
+}
+
+.option:has(input:checked) {
+  border-color: #111111;
+  box-shadow: inset 3px 0 0 #111111;
+}
+
+.option input {
+  margin-top: 0.25rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: #111111;
+  flex-shrink: 0;
+}
+
+.option > span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.optionHint {
+  font-size: 0.875rem;
+  color: var(--site-muted);
+}

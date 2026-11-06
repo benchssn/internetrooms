@@ -48,8 +48,22 @@ export function isAssetId(value: unknown): value is string {
   return typeof value === "string" && ASSET_ID.test(value);
 }
 
+/** "<asset folder uuid>/<uuid>.<ext>" — mirrors the storage policy. */
+const STORED_PATH = /^[0-9a-f-]{36}\/[0-9a-f-]{36}\.(webp|png|jpg|jpeg)$/;
+
+export function isStoredImagePath(value: unknown): value is string {
+  return typeof value === "string" && STORED_PATH.test(value);
+}
+
 export function isValidImageSource(value: ImageSource): boolean {
-  return value.kind === "url" ? isSafeImageUrl(value.url) : isAssetId(value.assetId);
+  switch (value.kind) {
+    case "url":
+      return isSafeImageUrl(value.url);
+    case "asset":
+      return isAssetId(value.assetId);
+    case "stored":
+      return isStoredImagePath(value.path);
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -305,7 +319,12 @@ class Reader {
         ? { kind: "asset", assetId: o.assetId }
         : this.fail(`${path}.assetId is not a valid asset id`);
     }
-    return this.fail(`${path}.kind must be "url" or "asset"`);
+    if (o.kind === "stored") {
+      return isStoredImagePath(o.path)
+        ? { kind: "stored", path: o.path }
+        : this.fail(`${path}.path is not a valid stored image path`);
+    }
+    return this.fail(`${path}.kind must be "url", "asset" or "stored"`);
   }
 
   links(value: unknown, path: string): RoomLink[] | undefined {
@@ -577,6 +596,11 @@ function canonical(value: unknown, key?: string): unknown {
   return value;
 }
 
+/** A stable JSON form of a room (sorted keys, normalised colours). */
+export function canonicalRoomJson(room: RoomConfig): string {
+  return JSON.stringify(canonical(room));
+}
+
 export function roomsEqual(a: RoomConfig, b: RoomConfig): boolean {
-  return JSON.stringify(canonical(a)) === JSON.stringify(canonical(b));
+  return canonicalRoomJson(a) === canonicalRoomJson(b);
 }

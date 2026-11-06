@@ -240,6 +240,49 @@ Every control has a visible label, errors are linked to their inputs with `aria-
 
 User accounts, databases, uploads, guestbook submissions, messaging, multiplayer, avatars, neighbourhoods, AI integrations, social feeds, monetisation, arbitrary user HTML/CSS/JS, and third-party media embeds.
 
+## Profiles & publishing (Milestone 5, Phase 2)
+
+Signed-in people choose a **username**, edit a public **profile**, and **publish** the room they build in the editor to `https://internetrooms.net/u/<username>`. They control whether it's **public**, **unlisted** or **private**, and can update or unpublish it at any time. There are no guestbooks, follows, likes or discovery yet.
+
+| Route | Purpose |
+| --- | --- |
+| `/settings` | First-login username setup; then **Profile** (username, display name, bio, picture) and **Room** (status, visibility, link + Copy, View, Unpublish / Publish again, new unlisted link). |
+| `/u/:username` | A published room, rendered with the shared `RoomRenderer` under a small profile strip. Unlisted rooms need `?key=…`. The owner sees Edit room / Settings and a note when only they can see it. |
+| `/edit` | Gains a **Publish** section (and toolbar button): Not published · Published · Unpublished changes · Publishing · Publish failed · Published successfully. |
+
+### Local drafts vs published rooms
+
+- The **draft** is still the room in this browser (localStorage + IndexedDB). It is never published automatically and publishing never changes it.
+- **Publish / Update published room** copies the draft to Supabase: it validates the room, uploads any browser-only images to Storage, swaps them for `{ "kind": "stored", "path": … }` references, then upserts the row. If any image is missing or fails to upload, nothing is saved.
+- The editor remembers (per account, in this browser) what it last published, to show **Unpublished changes**. If the room was published or changed from another device, it says so and offers two explicit, confirmed choices: **Load published room into editor** (undoable; nothing is saved locally until you press Save) or **Publish this editor's room instead**.
+- Unpublishing keeps the room in the database (hidden) and never touches the local draft.
+
+### Database (`supabase/migrations/`)
+
+| Migration | What it does |
+| --- | --- |
+| `20261105170000_profiles.sql` | `profiles` table (one per user). Username: 3–24 chars, `^[a-z0-9_-]+$`, not reserved, unique ignoring case. Length limits; avatar must live in the owner's folder. RLS: anyone reads; users insert/update only their own row; no deletes. Column grants stop `id`/timestamps changing. |
+| `20261105170100_rooms.sql` | `rooms` table (one per owner, `owner_id` unique). `visibility` in public/unlisted/private; `published_at` null = unpublished. Config must be a schema-v2 object ≤ 256 KB. Random `share_token` (unlisted key, never readable via the table) and `asset_folder`. RLS: owners read/write their own; anyone reads **published public** rooms. Unlisted and private rooms can't be listed. Functions: `get_published_room(username, key)` (the only visitor lookup), `get_my_room_share_token()`, `rotate_my_room_share_token()`. |
+| `20261105170200_storage.sql` | Buckets: **`room-assets` (private)**, 5 MB, PNG/JPEG/WebP — readable only while the room is published as public/unlisted (or by the owner), served via short-lived signed URLs; **`avatars` (public)**, 2 MB. Uploads: owner only, own folder, `<uuid>.<ext>` names, no overwrites. |
+
+All three are **additive and idempotent** — no `drop table`, `delete`, `truncate` or data changes; they can be re-run safely. They have **not** been applied to production.
+
+**Applying them** (once, in order), either:
+- Supabase dashboard → **SQL Editor** → paste and run each file in order, or
+- Supabase CLI: `supabase link --project-ref imtbvgslopyfxddysyon` then `supabase db push`.
+
+### Testing the security rules
+
+`npm run test:db` starts a throwaway local PostgreSQL, loads a small emulation of Supabase's `auth.uid()`, roles, default grants and storage tables (`supabase/tests/supabase_emulation.sql`), applies the migrations **twice**, and runs 100 checks in `supabase/tests/rls.test.sql` (ownership, usernames, visibility, unlisted keys, unpublishing, storage paths, private images). It needs the PostgreSQL server binaries (`initdb`, `pg_ctl`). It exercises the real migration SQL, but on an emulation — not Supabase itself.
+
+### Known limitations (Phase 2)
+
+- Changing your username changes your room's address; old links stop working (no redirects yet).
+- Once someone has seen an unlisted room's images, they can keep loading those images while the room stays unlisted (the page itself still needs the key). Use **Make a new link** in Settings if a link spreads too far; making the room private stops image access.
+- Images replaced or removed from a room aren't deleted from Storage yet, and old profile pictures aren't cleaned up.
+- Only one room per person.
+- Storage checks the declared image type and size; the app additionally re-encodes every image from pixels before upload.
+
 ## Accounts (Milestone 5, Phase 1)
 
 People can create an account with email and password, verify their address, log in, stay logged in across reloads, reset a forgotten password and log out. Accounts don't hold any data yet — rooms are still saved in the browser — and there are no profiles, publishing or social features.
