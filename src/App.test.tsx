@@ -93,6 +93,13 @@ describe("routes", () => {
     );
   });
 
+  it("no longer serves the temporary /supabase-test diagnostic page", () => {
+    renderAt("/supabase-test");
+    expect(
+      screen.getByRole("heading", { level: 1, name: /this room doesn't exist/i }),
+    ).toBeInTheDocument();
+  });
+
   it("marks the current page in the main navigation", () => {
     renderAt("/templates");
     const nav = screen.getByRole("navigation", { name: "Main" });
