@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 import { AuthProvider } from "./auth/AuthProvider";
 import { ProfileProvider } from "./cloud/ProfileProvider";
@@ -15,6 +15,12 @@ import { PublicRoomPage } from "./pages/PublicRoomPage";
 import { SettingsPage } from "./pages/settings/SettingsPage";
 import { RoomPage } from "./pages/RoomPage";
 import { TemplatesPage } from "./pages/TemplatesPage";
+
+// TEMPORARY: Supabase connectivity diagnostic. Loaded on demand so it adds
+// nothing to the main bundle. Remove once the connection is confirmed.
+const SupabaseTestPage = lazy(() =>
+  import("./pages/SupabaseTestPage").then((m) => ({ default: m.SupabaseTestPage })),
+);
 
 /** Router base, so the app also works if Vite's `base` is a sub-path. */
 const BASENAME = import.meta.env.BASE_URL.replace(/\/$/, "") || "/";
@@ -55,6 +61,14 @@ export function AppRoutes() {
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="/settings" element={<SettingsPage />} />
       <Route path="/u/:username" element={<PublicRoomPage />} />
+      <Route
+        path="/supabase-test"
+        element={
+          <Suspense fallback={null}>
+            <SupabaseTestPage />
+          </Suspense>
+        }
+      />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
